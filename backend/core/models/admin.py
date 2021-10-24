@@ -1,5 +1,5 @@
-from core.models.user import User
+from core.models.abstract_user import AbstractUser
 
 
-class Admin(User):
+class Admin(AbstractUser):
     pass

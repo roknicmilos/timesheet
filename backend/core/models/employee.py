@@ -1,5 +1,5 @@
-from core.models.user import User
+from core.models.abstract_user import AbstractUser
 
 
-class Employee(User):
+class Employee(AbstractUser):
     pass
