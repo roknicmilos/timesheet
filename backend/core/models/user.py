@@ -1,5 +1,7 @@
-class User:
-    id: int
+from core.models.base import AbstractModel
+
+
+class User(AbstractModel):
     name: str
     weekly_hours: float
     username: str

@@ -1,8 +1,8 @@
+from core.models.base import AbstractModel
 from core.models.employee import Employee
 
 
-class Project:
-    id: int
+class Project(AbstractModel):
     name: str
     description: str
     is_active: bool = False

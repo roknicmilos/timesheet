@@ -1,7 +1,7 @@
 from core.models.address import Address
+from core.models.base import AbstractModel
 
 
-class Client:
-    id: int
+class Client(AbstractModel):
     name: str
     address: Address

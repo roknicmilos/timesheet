@@ -1,3 +1,5 @@
-class Category:
-    id: int
+from core.models.base import AbstractModel
+
+
+class Category(AbstractModel):
     name: str
