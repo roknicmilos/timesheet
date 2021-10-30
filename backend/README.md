@@ -1,12 +1,13 @@
 # Timesheet backend
 
 ## Requirements
+- **Docker**:
+    - Windows - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
+    - Mac - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
+    - Linux - [Docker Engine](https://docs.docker.com/engine/install/#server)
+      and [Docker Compose](https://docs.docker.com/compose/install/)
 
-- [Python](https://www.python.org/)
-- [PIP](https://pip.pypa.io/en/stable/)
+## Project setup
 
-## Setup steps
-
-1. Open a terminal and go to the `backend` directory (located in the project's root directory)
-2. Run `pip install -r requirements.txt`
-3. Run `python manage.py runserver`
+1. Create `.env` based on `example.env`
+2. Run: `docker-compose up`

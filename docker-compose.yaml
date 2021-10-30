@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+
+  django:
+    container_name: timesheet-django
+    build:
+      context: .
+      dockerfile: django.Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app/src
+
+  postgres:
+    container_name: timesheet-postgres
+    image: library/postgres:13.4-alpine
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: timesheet-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@pgadmin.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  pgadmin-data:
+  postgres-data:
