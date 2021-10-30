@@ -1,0 +1,3 @@
+class BaseModel:
+    id: int
+
