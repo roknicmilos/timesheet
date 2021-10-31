@@ -32,8 +32,8 @@ class User(BaseModel):
     def password(self) -> str:
         return f'algorithm: {self.PASSWORD_ALGORITHM} ' \
                f'iterations: {self.PASSWORD_HASH_ITERATIONS} ' \
-               f'salt: {mask_string(self._password_salt.decode("utf-8"))} ' \
-               f'hash: {mask_string(self._password_key.decode("utf-8"))}'
+               f'salt: {mask_string(self.password_salt)} ' \
+               f'hash: {mask_string(self.password_key)}'
 
     @password.setter
     def password(self, raw_password: str) -> None:
@@ -45,6 +45,14 @@ class User(BaseModel):
             salt=self._password_salt,
             iterations=self.PASSWORD_HASH_ITERATIONS
         )
+
+    @property
+    def password_salt(self) -> str:
+        return self._password_salt.decode("utf-8")
+
+    @property
+    def password_key(self) -> str:
+        return self._password_key.decode("utf-8")
 
     def check_password(self, raw_password) -> bool:
         password_key = pbkdf2_hmac(
