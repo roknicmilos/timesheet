@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS "user" CASCADE ;
+DROP TABLE IF EXISTS "daily_time_sheet" CASCADE ;
