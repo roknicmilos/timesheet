@@ -1,4 +1,12 @@
-CREATE TABLE "user"
+CREATE DATABASE timesheet;
+
+CREATE USER timesheet WITH PASSWORD 'timesheet';
+
+GRANT ALL PRIVILEGES ON DATABASE timesheet to timesheet;
+
+\c timesheet;
+
+CREATE TABLE core_user
 (
     id            INTEGER      NOT NULL PRIMARY KEY,
     name          VARCHAR(250) NOT NULL,
@@ -11,13 +19,13 @@ CREATE TABLE "user"
     is_admin      BOOLEAN      NOT NULL
 );
 
-CREATE TABLE "daily_time_sheet"
+CREATE TABLE core_daily_time_sheet
 (
     id      INTEGER NOT NULL PRIMARY KEY,
     date    DATE    NOT NULL,
     user_id INTEGER NOT NULL,
     CONSTRAINT fk_user
         FOREIGN KEY (user_id)
-            REFERENCES "user" (id)
+            REFERENCES core_user (id)
             ON DELETE CASCADE
 );

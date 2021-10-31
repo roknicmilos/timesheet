@@ -27,7 +27,6 @@ USER app
 
 RUN pip install --upgrade pip
 
-COPY --chown=app:app entrypoint.sh      /app/
 COPY --chown=app:app requirements.txt   /app/
 
 RUN pip install -r /app/requirements.txt
@@ -37,4 +36,3 @@ WORKDIR /app/src
 
 EXPOSE 8000
 
-CMD ["/app/entrypoint.sh"]
