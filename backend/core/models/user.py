@@ -2,11 +2,24 @@ import os
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinLengthValidator
 from hashlib import pbkdf2_hmac
-from django.db import models
+from django.db import models, transaction
 from core.utils import validate_raw_password
 
 
+class UserManager(models.Manager):
+
+    @transaction.atomic
+    def create(self, **kwargs):
+        raw_password = kwargs.pop('password', None)
+        user = super(UserManager, self).create(**kwargs)
+        user.set_password(raw_password=raw_password)
+        user.save()
+        return user
+
+
 class User(models.Model):
+    objects = UserManager()
+
     name = models.CharField(
         verbose_name='name',
         max_length=100,

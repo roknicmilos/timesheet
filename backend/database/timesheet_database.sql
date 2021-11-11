@@ -6,26 +6,29 @@ GRANT ALL PRIVILEGES ON DATABASE timesheet to timesheet;
 
 \c timesheet;
 
-CREATE TABLE core_user
+CREATE TABLE IF NOT EXISTS core_user
 (
-    id            BIGINT      NOT NULL PRIMARY KEY,
-    name          VARCHAR(250) NOT NULL,
-    email         VARCHAR(250) NOT NULL,
-    weekly_hours  FLOAT        NOT NULL,
-    username      VARCHAR(250) NOT NULL,
-    password_salt VARCHAR(250),
-    password_key  VARCHAR(500),
-    is_active     BOOLEAN      NOT NULL,
-    is_admin      BOOLEAN      NOT NULL
+    id           BIGSERIAL    NOT NULL PRIMARY KEY,
+    name         VARCHAR(250) NOT NULL,
+    email        VARCHAR(250) NOT NULL,
+    weekly_hours FLOAT        NOT NULL,
+    username     VARCHAR(250) NOT NULL,
+    password     VARCHAR(500),
+    is_active    BOOLEAN      NOT NULL,
+    is_admin     BOOLEAN      NOT NULL
 );
 
-CREATE TABLE core_daily_time_sheet
+CREATE TABLE IF NOT EXISTS core_daily_time_sheet
 (
-    id      BIGINT NOT NULL PRIMARY KEY,
-    date    DATE    NOT NULL,
-    user_id INTEGER NOT NULL,
+    id      BIGSERIAL NOT NULL PRIMARY KEY,
+    date    DATE      NOT NULL,
+    user_id INTEGER   NOT NULL,
     CONSTRAINT fk_user
         FOREIGN KEY (user_id)
             REFERENCES core_user (id)
             ON DELETE CASCADE
 );
+
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO timesheet;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO timesheet;
