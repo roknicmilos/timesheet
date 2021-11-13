@@ -4,7 +4,7 @@ from django.db.models import Model
 
 
 class AbstractFactory(ABC):
-    should_store_in_db: bool = False
+    should_store_in_db: bool = True
     model_class: Type[Model]
 
     @classmethod

@@ -6,7 +6,8 @@ class DailyTimeSheet(models.Model):
         db_table = 'core_daily_time_sheet'
 
     date = models.DateField(
-        verbose_name='date'
+        verbose_name='date',
+        unique=True,
     )
     employee = models.ForeignKey(
         to='core.User',

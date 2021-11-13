@@ -22,7 +22,7 @@ class User(models.Model):
 
     name = models.CharField(
         verbose_name='name',
-        max_length=100,
+        max_length=250,
         validators=[
             MinLengthValidator(limit_value=4)
         ]
@@ -33,7 +33,7 @@ class User(models.Model):
     )
     username = models.CharField(
         verbose_name='username',
-        max_length=150,
+        max_length=250,
         unique=True,
         validators=[
             UnicodeUsernameValidator()
@@ -41,7 +41,7 @@ class User(models.Model):
     )
     password = models.CharField(
         verbose_name='password',
-        max_length=150
+        max_length=500,
     )
     weekly_hours = models.FloatField(
         verbose_name='weekly hours'
