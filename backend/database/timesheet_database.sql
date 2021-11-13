@@ -22,10 +22,23 @@ CREATE TABLE IF NOT EXISTS core_daily_time_sheet
 (
     id      BIGSERIAL NOT NULL PRIMARY KEY,
     date    DATE      NOT NULL,
-    user_id INTEGER   NOT NULL,
+    user_id BIGINT    NOT NULL,
     CONSTRAINT fk_user
         FOREIGN KEY (user_id)
             REFERENCES core_user (id)
+            ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS core_time_sheet_report
+(
+    id                  BIGSERIAL NOT NULL PRIMARY KEY,
+    hours               FLOAT     NOT NULL,
+    overtime_hours      FLOAT     NOT NULL,
+    description         TEXT      NOT NULL,
+    daily_time_sheet_id BIGINT    NOT NULL,
+    CONSTRAINT fk_user
+        FOREIGN KEY (daily_time_sheet_id)
+            REFERENCES core_daily_time_sheet (id)
             ON DELETE CASCADE
 );
 

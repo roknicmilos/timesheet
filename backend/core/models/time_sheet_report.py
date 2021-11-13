@@ -1,11 +1,25 @@
-from datetime import date
-
-from core.models.base import BaseModel
+from django.db import models
 
 
-class TimeSheetReport(BaseModel):
-    date: date
-    time: float
-    overtime: float
-    description: str
-    daily_time_sheet_id: int
+class TimeSheetReport(models.Model):
+    class Meta:
+        db_table = 'core_time_sheet_report'
+        default_related_name = 'time_sheet_reports'
+
+    hours = models.FloatField(
+        verbose_name='hours',
+    )
+    overtime_hours = models.FloatField(
+        verbose_name='overtime hours',
+        default=0,
+    )
+    description = models.TextField(
+        verbose_name='description',
+        default='',
+    )
+    daily_time_sheet = models.ForeignKey(
+        to='core.DailyTimeSheet',
+        verbose_name='daily time sheet',
+        on_delete=models.CASCADE,
+        related_name='time_sheet_reports',
+    )
