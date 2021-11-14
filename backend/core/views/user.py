@@ -2,6 +2,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets
 from core.models import User
+from core.services.user import create_user, update_user
 from core.utils import mask_string
 
 
@@ -16,18 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
         kwargs['password'] = masked_password[:10] if len(masked_password) > 10 else masked_password
         return kwargs
 
-    def update(self, instance, validated_data):
-        for key, value in validated_data.items():
-            if key == 'password':
-                instance.set_password(raw_password=value)
-                continue
-            setattr(instance, key, value)
-        instance.save()
-        return instance
-
-    def create(self, validated_data):
-        return User.objects.create(**validated_data)
-
 
 class UserViewSet(viewsets.ViewSet):
 
@@ -41,7 +30,7 @@ class UserViewSet(viewsets.ViewSet):
     def create(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            user = create_user(**serializer.validated_data)
             serializer = UserSerializer(user)
             return Response(data=serializer.data, status=201)
         return Response(data={'errors': serializer.errors}, status=400)
@@ -57,7 +46,7 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, pk=pk)
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            update_user(user=user, **serializer.validated_data)
             serializer = UserSerializer(user)
             return Response(data=serializer.data, status=200)
         return Response(data={'errors': serializer.errors}, status=400)
@@ -67,7 +56,7 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, pk=pk)
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            update_user(user=user, **serializer.validated_data)
             serializer = UserSerializer(user)
             return Response(data=serializer.data, status=200)
         return Response(data={'errors': serializer.errors}, status=400)

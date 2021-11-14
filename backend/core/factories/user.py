@@ -1,10 +1,10 @@
 import random
 from core.factories.base import AbstractFactory
-from core.models import User
+from core.services.user import create_user
 
 
 class UserFactory(AbstractFactory):
-    model_class = User
+    create_model_func = create_user
     default_password = 'pass4user'
 
     @classmethod
@@ -14,7 +14,7 @@ class UserFactory(AbstractFactory):
             'name': kwargs.get('name', 'Jon Snow'),
             'password': kwargs.get('password', cls.default_password),
             'username': kwargs.get('username', cls._get_unique_username()),
-            'weekly_hours': kwargs.get('weekly_hours', random.randint(20, 60))
+            'weekly_hours': kwargs.get('weekly_hours', float(random.randint(20, 60)))
         }
 
     @classmethod

@@ -1,12 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import Type
-from django.db.models import Model
+from typing import Callable
 
 
 class AbstractFactory(ABC):
-    should_store_in_db: bool = True
     next_id: int = 1
-    model_class: Type[Model]
+    create_model_func: Callable = None
+
+    def __init_subclass__(cls, **kwargs):
+        if not cls.create_model_func:
+            raise AttributeError(f'{cls.__name__} class attribute "create_model_func" is missing')
+
+        super(AbstractFactory, cls).__init_subclass__(**kwargs)
 
     @classmethod
     @abstractmethod
@@ -14,20 +18,17 @@ class AbstractFactory(ABC):
         pass
 
     @classmethod
-    def create(cls, should_store_in_db: bool = None, **kwargs):
-        if isinstance(should_store_in_db, bool):
-            cls.should_store_in_db = should_store_in_db
-
+    def create(cls, **kwargs):
         kwargs = cls.prepare_kwargs(**kwargs)
 
-        obj = cls.model_class.objects.create(**kwargs) if cls.should_store_in_db else cls.model_class(**kwargs)
+        obj = cls.create_model_func(**kwargs)
         cls.next_id = obj.pk + 1
 
         return obj
 
     @classmethod
-    def create_batch(cls, count: int, should_store_in_db: bool = None, **kwargs):
-        return [cls.create(should_store_in_db=should_store_in_db, **kwargs) for _ in range(count)]
+    def create_batch(cls, count: int, **kwargs):
+        return [cls.create(**kwargs) for _ in range(count)]
 
     @classmethod
     def reset(cls) -> None:
