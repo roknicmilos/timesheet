@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -26,21 +27,29 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
         try:
             self.user = User.objects.get(pk=user_pk)
         except User.DoesNotExist:
-            return JsonResponse(data={'detail': 'User not fount.'}, status=404)
+            return JsonResponse(data={'detail': 'User not found.'}, status=404)
 
         return super(DailyTimeSheetViewSet, self).dispatch(request, *args, user_pk=user_pk, **kwargs)
 
     def list(self, request, **kwargs):
-        daily_time_sheets = DailyTimeSheet.objects.filter(employee=self.user).all()
+        daily_time_sheets = DailyTimeSheet.objects.filter(self._get_list_filters(request=request))
         serializer = DailyTimeSheetSerializer(daily_time_sheets, many=True)
         return Response(data=serializer.data)
+
+    def _get_list_filters(self, request) -> Q:
+        filters = Q(employee=self.user)
+        if 'from' in request.query_params:
+            filters &= Q(date__gte=request.query_params.get('from'))
+        if 'until' in request.query_params:
+            filters &= Q(date__lte=request.query_params.get('until'))
+        return filters
 
     def create(self, request, **kwargs):
         serializer = DailyTimeSheetSerializer(data={**request.data, 'employee': self.user.pk})
         if serializer.is_valid():
             daily_time_sheet = serializer.save()
             serializer = DailyTimeSheetSerializer(daily_time_sheet)
-            return Response(data=serializer.data, status=200)
+            return Response(data=serializer.data, status=201)
         return Response(data={'errors': serializer.errors}, status=400)
 
 

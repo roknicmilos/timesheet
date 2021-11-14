@@ -1,36 +1,36 @@
 from typing import List
 from rest_framework.reverse import reverse
-from core.factories.user import UserFactory
+from core.factories import UserFactory
 from core.models import User
 from core.tests.mixins import APITestCase
 
 
 class UserViewSetTests(APITestCase):
 
-    def setUp(self) -> None:
-        super(UserViewSetTests, self).setUp()
-        self.maxDiff = None
+    def tearDown(self) -> None:
+        super(UserViewSetTests, self).tearDown()
+        User.objects.all().delete()
 
     def test_should_return_list_of_all_users(self):
-        users = UserFactory.create_batch(size=3)
+        users = UserFactory.create_batch(count=3)
         response = self.client.get(reverse('api:users-list'))
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
         self.assertIsInstance(actual_response_data, list)
         self.assertEqual(len(actual_response_data), len(users))
-        expected_response_data = self._get_expected_users_list_response_data(users=users)
+        expected_response_data = self._get_expected_list_response_data(users=users)
         self.assertEqual(actual_response_data, expected_response_data)
 
     @classmethod
-    def _get_expected_users_list_response_data(cls, users: List[User]) -> List[dict]:
+    def _get_expected_list_response_data(cls, users: List[User]) -> List[dict]:
         expected_data = []
         for user in users:
-            expected_data_item = cls._get_expected_users_detail_response_data(user=user)
+            expected_data_item = cls._get_expected_detail_response_data(user=user)
             expected_data.append(expected_data_item)
         return expected_data
 
     @staticmethod
-    def _get_expected_users_detail_response_data(user: User) -> dict:
+    def _get_expected_detail_response_data(user: User) -> dict:
         return {
             'id': user.pk,
             'name': user.name,
@@ -50,7 +50,7 @@ class UserViewSetTests(APITestCase):
             'password': 'pass4ana',
             'weekly_hours': 40,
         }
-        next_user_id = UserFactory.get_next_user_id()
+        next_user_id = UserFactory.next_id
         response = self.client.post(reverse('api:users-list'), json=request_data)
         self.assertEqual(response.status_code, 201)
         actual_response_data = response.json()
@@ -71,13 +71,12 @@ class UserViewSetTests(APITestCase):
         response = self.client.get(reverse('api:users-detail', args=(user.pk,)))
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
-        expected_response_data = self._get_expected_users_detail_response_data(user=user)
+        expected_response_data = self._get_expected_detail_response_data(user=user)
         self.assertEqual(actual_response_data, expected_response_data)
 
     def test_should_return_404_when_user_does_not_exist(self):
-        non_existing_user_id = UserFactory.get_next_user_id()
-        self.assertFalse(User.objects.filter(pk=non_existing_user_id).exists())
-        response = self.client.get(reverse('api:users-detail', args=(non_existing_user_id,)))
+        self.assertFalse(User.objects.filter(pk=UserFactory.next_id).exists())
+        response = self.client.get(reverse('api:users-detail', args=(UserFactory.next_id,)))
         self.assertEqual(response.status_code, 404)
         actual_response_data = response.json()
         expected_response_data = {
@@ -134,7 +133,7 @@ class UserViewSetTests(APITestCase):
         response = self.client.patch(reverse('api:users-detail', args=(user.pk,)), json=request_data)
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
-        expected_response_data = self._get_expected_users_detail_response_data(user=user)
+        expected_response_data = self._get_expected_detail_response_data(user=user)
         expected_response_data['name'] = new_name
         self.assertEqual(actual_response_data, expected_response_data)
 
@@ -144,8 +143,7 @@ class UserViewSetTests(APITestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_should_return_404_instead_of_deleting_user_when_they_do_not_exist(self):
-        non_existing_user_id = UserFactory.get_next_user_id()
-        response = self.client.delete(reverse('api:users-detail', args=(non_existing_user_id,)))
+        response = self.client.delete(reverse('api:users-detail', args=(UserFactory.next_id,)))
         self.assertEqual(response.status_code, 404)
         actual_response_data = response.json()
         expected_response_data = {

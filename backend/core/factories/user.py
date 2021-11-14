@@ -19,15 +19,8 @@ class UserFactory(AbstractFactory):
 
     @classmethod
     def _get_unique_email(cls) -> str:
-        return f'user.{cls.get_next_user_id()}@example.com'
+        return f'user.{cls.next_id}@example.com'
 
     @classmethod
     def _get_unique_username(cls) -> str:
-        return f'user.{cls.get_next_user_id()}'
-
-    @staticmethod
-    def get_next_user_id() -> int:
-        try:
-            return User.objects.latest('pk').pk + 1
-        except User.DoesNotExist:
-            return 1
+        return f'user.{cls.next_id}'
