@@ -1,6 +1,5 @@
 from typing import List
-
-from django.db import models
+from django.db import models, transaction
 
 
 class BasePythonModel:
@@ -9,7 +8,7 @@ class BasePythonModel:
 
 class BaseManager(models.Manager):
 
-    # TODO: test atomicity! if one fails, all should fail!
+    @transaction.atomic
     def create_batch(self, *args) -> List[models.Model]:
         return [self.create(**kwargs) for kwargs in args]
 
