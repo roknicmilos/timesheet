@@ -1,7 +1,8 @@
 from django.db import models
+from core.models.base import BaseModel
 
 
-class TimeSheetReport(models.Model):
+class TimeSheetReport(BaseModel):
     class Meta:
         db_table = 'core_time_sheet_report'
         default_related_name = 'time_sheet_reports'

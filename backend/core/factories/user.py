@@ -1,10 +1,10 @@
 import random
 from core.factories.base import AbstractFactory
-from core.services.user import create_user
+from core.models import User
 
 
 class UserFactory(AbstractFactory):
-    create_model_func = create_user
+    model_class = User
     default_password = 'pass4user'
 
     @classmethod

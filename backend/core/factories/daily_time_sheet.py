@@ -7,7 +7,7 @@ from core.models import DailyTimeSheet
 
 
 class DailyTimeSheetFactory(AbstractFactory):
-    create_model_func = DailyTimeSheet.objects.create
+    model_class = DailyTimeSheet
     next_date: date = timezone.now().date()
 
     @classmethod

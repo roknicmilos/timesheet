@@ -2,7 +2,6 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets
 from core.models import User
-from core.services.user import create_user, update_user
 from core.utils import mask_string
 
 
@@ -30,7 +29,7 @@ class UserViewSet(viewsets.ViewSet):
     def create(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user = create_user(**serializer.validated_data)
+            user = User.objects.create(**serializer.validated_data)
             serializer = UserSerializer(user)
             return Response(data=serializer.data, status=201)
         return Response(data={'errors': serializer.errors}, status=400)
@@ -46,7 +45,7 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, pk=pk)
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
-            update_user(user=user, **serializer.validated_data)
+            user.update(**serializer.validated_data)
             serializer = UserSerializer(user)
             return Response(data=serializer.data, status=200)
         return Response(data={'errors': serializer.errors}, status=400)
@@ -56,7 +55,7 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, pk=pk)
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
-            update_user(user=user, **serializer.validated_data)
+            user.update(**serializer.validated_data)
             serializer = UserSerializer(user)
             return Response(data=serializer.data, status=200)
         return Response(data={'errors': serializer.errors}, status=400)

@@ -3,10 +3,23 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinLengthValidator
 from hashlib import pbkdf2_hmac
 from django.db import models
+from core.models.base import BaseModel, BaseManager
 from core.utils import validate_raw_password
 
 
-class User(models.Model):
+class UserManager(BaseManager):
+
+    def create(self, **kwargs):
+        raw_password = kwargs.pop('password', None)
+        user = super(UserManager, self).create(**kwargs)
+        user.set_password(raw_password=raw_password)
+        user.save()
+        return user
+
+
+class User(BaseModel):
+    objects = UserManager()
+
     name = models.CharField(
         verbose_name='name',
         max_length=250,
@@ -73,3 +86,9 @@ class User(models.Model):
     @property
     def is_worker(self) -> bool:
         return not self.is_admin
+
+    def update(self, **kwargs):
+        raw_password = kwargs.pop('password', None)
+        if raw_password:
+            self.set_password(raw_password=raw_password)
+        return super(User, self).update(**kwargs)

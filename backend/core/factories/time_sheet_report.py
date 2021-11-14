@@ -5,7 +5,7 @@ from core.models import TimeSheetReport
 
 
 class TimeSheetReportFactory(AbstractFactory):
-    create_model_func = TimeSheetReport.objects.create
+    model_class = TimeSheetReport
 
     @classmethod
     def prepare_kwargs(cls, **kwargs):

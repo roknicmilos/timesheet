@@ -1,7 +1,8 @@
 from django.db import models
+from core.models.base import BaseModel
 
 
-class DailyTimeSheet(models.Model):
+class DailyTimeSheet(BaseModel):
     class Meta:
         db_table = 'core_daily_time_sheet'
 

@@ -47,7 +47,7 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
     def create(self, request, **kwargs):
         serializer = DailyTimeSheetSerializer(data={**request.data, 'employee': self.user.pk})
         if serializer.is_valid():
-            daily_time_sheet = serializer.save()
+            daily_time_sheet = DailyTimeSheet.objects.create(**serializer.validated_data)
             serializer = DailyTimeSheetSerializer(daily_time_sheet)
             return Response(data=serializer.data, status=201)
         return Response(data={'errors': serializer.errors}, status=400)
@@ -61,13 +61,13 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None, **kwargs):
         daily_time_sheet = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.user)
         data = self._prepare_time_sheet_reports_data(request=request, daily_time_sheet_id=pk)
-        daily_time_sheet_serializer = TimeSheetReportSerializer(data=data, many=True)
-        if daily_time_sheet_serializer.is_valid():
+        time_sheet_report_serializer = TimeSheetReportSerializer(data=data, many=True)
+        if time_sheet_report_serializer.is_valid():
             daily_time_sheet.time_sheet_reports.all().delete()
-            daily_time_sheet_serializer.save()
+            TimeSheetReport.objects.create_batch(*time_sheet_report_serializer.validated_data)
             serializer = DailyTimeSheetSerializer(daily_time_sheet)
             return Response(data=serializer.data, status=200)
-        return Response(data={'errors': daily_time_sheet_serializer.errors}, status=400)
+        return Response(data={'errors': time_sheet_report_serializer.errors}, status=400)
 
     @staticmethod
     def _prepare_time_sheet_reports_data(request, daily_time_sheet_id: int) -> dict:
