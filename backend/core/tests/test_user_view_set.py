@@ -3,6 +3,7 @@ from rest_framework.reverse import reverse
 from core.factories import UserFactory
 from core.models import User
 from core.tests.mixins import APITestCase
+from core.views.user_view_set import UserSerializer
 
 
 class UserViewSetTests(APITestCase):
@@ -65,6 +66,8 @@ class UserViewSetTests(APITestCase):
             'is_admin': False,  # default value
         }
         self.assertEqual(actual_response_data, expected_response_data)
+        user = User.objects.get(pk=next_user_id)
+        self.assertTrue(user.check_password(raw_password=UserSerializer.DEFAULT_RAW_PASSWORD))
 
     def test_should_return_single_user(self):
         user = UserFactory.create()
@@ -74,7 +77,7 @@ class UserViewSetTests(APITestCase):
         expected_response_data = self._get_expected_detail_response_data(user=user)
         self.assertEqual(actual_response_data, expected_response_data)
 
-    def test_should_return_404_when_user_does_not_exist(self):
+    def test_should_return_404_instead_of_the_user_when_user_does_not_exist(self):
         self.assertFalse(User.objects.filter(pk=UserFactory.next_id).exists())
         response = self.client.get(reverse('api:users-detail', args=(UserFactory.next_id,)))
         self.assertEqual(response.status_code, 404)
@@ -90,7 +93,7 @@ class UserViewSetTests(APITestCase):
             'name': f'{user.name}_updated',
             'email': f'updated_{user.email}',
             'username': user.username,
-            'password': UserFactory.default_password,
+            'password': f'{UserSerializer.DEFAULT_RAW_PASSWORD}-updated',
             'weekly_hours': float(user.weekly_hours),
             'is_active': user.is_active,
             'is_admin': user.is_admin,
@@ -104,6 +107,8 @@ class UserViewSetTests(APITestCase):
             'password': '**********'
         }
         self.assertEqual(actual_response_data, expected_response_data)
+        user.refresh_from_db()
+        self.assertTrue(user.check_password(raw_password='pass4user!'))
 
     def test_should_not_update_user_when_all_required_fields_are_not_provided(self):
         user = UserFactory.create()
@@ -111,7 +116,6 @@ class UserViewSetTests(APITestCase):
             'name': user.name,
             'email': user.email,
             'username': user.username,
-            # password -> required field
             # weekly_hours -> required field
         }
         response = self.client.put(reverse('api:users-detail', args=(user.pk,)), json=request_data)
@@ -119,7 +123,6 @@ class UserViewSetTests(APITestCase):
         actual_errors = response.json().get('errors')
         self.assertIsInstance(actual_errors, dict)
         expected_errors = {
-            'password': ['This field is required.'],
             'weekly_hours': ['This field is required.'],
         }
         self.assertEqual(actual_errors, expected_errors)

@@ -12,11 +12,11 @@ class DailyTimeSheetViewSetTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super(DailyTimeSheetViewSetTests, cls).setUpTestData()
-        cls.today = timezone.now().date()
-        cls.seven_days_ago = cls.today - timedelta(days=7)
-        cls.eight_days_ago = cls.today - timedelta(days=8)
-        cls.seven_days_ahead = cls.today + timedelta(days=7)
-        cls.eight_days_ahead = cls.today + timedelta(days=8)
+        today = timezone.now().date()
+        cls.seven_days_ago = today - timedelta(days=7)
+        cls.eight_days_ago = today - timedelta(days=8)
+        cls.seven_days_ahead = today + timedelta(days=7)
+        cls.eight_days_ahead = today + timedelta(days=8)
 
     def tearDown(self) -> None:
         super(DailyTimeSheetViewSetTests, self).tearDown()
@@ -25,17 +25,17 @@ class DailyTimeSheetViewSetTests(APITestCase):
 
     @staticmethod
     def build_daily_time_sheets_list_url(user_id: int, **url_params) -> str:
-        base_url = reverse('api:daily_time_sheets-list', args=(user_id,))
+        base_url = reverse('api:daily-time-sheets-list', args=(user_id,))
         return f'{base_url}?{"&".join([f"{key}={value}" for key, value in url_params.items()])}'
 
     @staticmethod
     def build_daily_time_sheets_detail_url(pk: int, user_id: int) -> str:
-        return reverse('api:daily_time_sheets-detail', args=(user_id, pk))
+        return reverse('api:daily-time-sheets-detail', args=(user_id, pk))
 
     def test_should_return_list_of_all_daily_time_sheets_of_the_user(self):
         user = UserFactory.create()
         daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=user, time_sheet_report_count=3)
-        response = self.client.get(reverse('api:daily_time_sheets-list', args=(user.pk,)))
+        response = self.client.get(reverse('api:daily-time-sheets-list', args=(user.pk,)))
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
         self.assertIsInstance(actual_response_data, list)
@@ -73,7 +73,7 @@ class DailyTimeSheetViewSetTests(APITestCase):
     def test_should_return_404_instead_of_daily_time_sheet_list_of_the_user_when_user_does_not_exist(self):
         user = UserFactory.create()
         DailyTimeSheetFactory.create_batch(count=2, employee=user)
-        response = self.client.get(reverse('api:daily_time_sheets-list', args=(UserFactory.next_id,)))
+        response = self.client.get(reverse('api:daily-time-sheets-list', args=(UserFactory.next_id,)))
         self.assertEqual(response.status_code, 404)
         actual_response_data = response.json()
         expected_response_data = {

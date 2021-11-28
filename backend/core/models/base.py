@@ -2,10 +2,6 @@ from typing import List
 from django.db import models, transaction
 
 
-class BasePythonModel:
-    id: int
-
-
 class BaseManager(models.Manager):
 
     @transaction.atomic

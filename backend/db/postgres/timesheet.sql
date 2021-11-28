@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS core_user
     email        VARCHAR(250) NOT NULL UNIQUE,
     weekly_hours FLOAT        NOT NULL,
     username     VARCHAR(250) NOT NULL UNIQUE,
-    password     VARCHAR(500),
+    password     BYTEA,
     is_active    BOOLEAN      NOT NULL,
     is_admin     BOOLEAN      NOT NULL
 );

@@ -39,9 +39,10 @@ class User(BaseModel):
             UnicodeUsernameValidator()
         ],
     )
-    password = models.CharField(
+    password = models.BinaryField(
         verbose_name='password',
         max_length=500,
+        default=b'',
     )
     weekly_hours = models.FloatField(
         verbose_name='weekly hours'
@@ -72,14 +73,19 @@ class User(BaseModel):
 
 
     def check_password(self, raw_password) -> bool:
-        password_salt = self.password[:self.PASSWORD_SALT_SIZE]
-        password_key = self.password[self.PASSWORD_SALT_SIZE:]
+        if not (isinstance(raw_password, str) and self.password):
+            return False
+
+        original_password = bytes(self.password)
+        password_salt = original_password[:self.PASSWORD_SALT_SIZE]
+        password_key = original_password[self.PASSWORD_SALT_SIZE:]
         other_password_key = pbkdf2_hmac(
             hash_name=self.PASSWORD_ALGORITHM,
             password=raw_password.encode('utf-8'),
             salt=password_salt,
             iterations=self.PASSWORD_HASH_ITERATIONS
         )
+
         return password_key == other_password_key
 
 
