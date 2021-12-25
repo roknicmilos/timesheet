@@ -14,7 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'is_active', 'is_admin', 'name', 'password', 'username', 'weekly_hours',
         ]
         extra_kwargs = {
-            'password': {'required': False}
+            'password': {'required': False},
+            'weekly_hours': {'required': True},
         }
 
     def to_representation(self, instance):
