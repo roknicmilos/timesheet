@@ -18,7 +18,8 @@ class User(AbstractUser, BaseModel):
         unique=True
     )
     weekly_hours = models.FloatField(
-        verbose_name='weekly hours'
+        verbose_name='weekly hours',
+        default=40,
     )
     is_admin = models.BooleanField(
         verbose_name='is admin',
