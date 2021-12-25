@@ -12,7 +12,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./backend:/app/src
+      - .:/app/src
     command: python3 manage.py runserver 0.0.0.0:8000
 
   postgres:
@@ -24,7 +24,6 @@ services:
       - POSTGRES_DB=timesheet
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./backend/db/:/tmp/db/
 
   pgadmin:
     image: dpage/pgadmin4

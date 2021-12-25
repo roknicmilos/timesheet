@@ -26,9 +26,7 @@ USER app
 
 RUN pip install --upgrade pip
 
-COPY --chown=app:app requirements.txt   /app/
-
-RUN pip install -r /app/requirements.txt
-COPY --chown=app:app ./backend /app/src
+COPY --chown=app:app . /app/src
+RUN pip install -r /app/src/requirements.txt
 
 WORKDIR /app/src
