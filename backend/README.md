@@ -1,6 +1,7 @@
 # Timesheet backend
 
 ## Requirements
+
 - **Docker**:
     - Windows - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
     - Mac - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
@@ -9,5 +10,4 @@
 
 ## Project setup
 
-1. Create `.env` based on `example.env`
-2. Run: `docker-compose up`
+Run: `docker-compose up`
