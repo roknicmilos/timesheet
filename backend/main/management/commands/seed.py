@@ -21,8 +21,6 @@ class Command(BaseCommand):
         apps_options = options.get('apps')
         app_configs = self._get_app_configs(apps_options)
 
-        print('Seeding:', app_configs)
-
         for app_config in app_configs:
             seeds_path = os.path.join(app_config.path, 'seeds')
             if not os.path.isdir(seeds_path):

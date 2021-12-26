@@ -16,4 +16,5 @@ class DailyTimeSheet(BaseModel):
         verbose_name='employee',
         on_delete=models.CASCADE,
         db_column='user_id',
+        related_name='daily_time_sheets',
     )
