@@ -1,3 +1,8 @@
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Model
+from django.urls import reverse
+
+
 def mask_string(string: str, masked_chars_count: int = None, starts_from_end: bool = True) -> str:
     if masked_chars_count is None:
         return ''.join(['*' for _ in range(len(string))])
@@ -8,3 +13,13 @@ def mask_string(string: str, masked_chars_count: int = None, starts_from_end: bo
     if starts_from_end:
         return string_visible_part + string_masked_part
     return string_masked_part + string_visible_part
+
+
+def remove_duplicates(collection: list | tuple) -> list | tuple:
+    collection_type = type(collection)
+    return collection_type(dict.fromkeys(collection))
+
+
+def get_model_admin_change_details_url(obj: Model) -> str:
+    content_type = ContentType.objects.get_for_model(obj.__class__)
+    return reverse(f'admin:{content_type.app_label}_{content_type.model}_change', args=(obj.id,))

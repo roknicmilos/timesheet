@@ -1,5 +1,6 @@
 from typing import List
 from django.db import models, transaction
+from django_extensions.db.models import TimeStampedModel
 
 
 class BaseManager(models.Manager):
@@ -9,7 +10,7 @@ class BaseManager(models.Manager):
         return [self.create(**kwargs) for kwargs in args]
 
 
-class BaseModel(models.Model):
+class BaseModel(TimeStampedModel):
     class Meta:
         abstract = True
 
