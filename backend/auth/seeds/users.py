@@ -42,5 +42,6 @@ seed_items = [
 
 def post_seed():
     for seed in seed_items:
-        seed.set_password('pass4user')
-        seed.save()
+        user = User.objects.get(pk=seed.pk)
+        user.set_password('pass4user')
+        user.save()
