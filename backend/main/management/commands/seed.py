@@ -8,14 +8,24 @@ from django.db.models import Model
 
 class Command(BaseCommand):
     """
-    Seeds all objects from the specified apps. Requirement is that app has folder named "seeds"
-    that contains .py files that has a list or tuple named "seed_items" with all the objects.
-    Objects need to have an attribute "pk". Filenames starting with underscore will be skipped.
+    Seeds all objects from the specified Django apps.
+
+    Requirement is that apps has folder named "seeds" that contains .py files that
+    have a collection (list or tuple) named "seed_items" with all the objects.
+
+    If defined, function "post_seed" will be executed after "seed_items" from the same
+    file are seeded. This function can be used for handling Many-to-Many relationships.
+
+    Objects need to have an attribute "pk", because it will be checked if the object
+    with the specified "pk" exists, and it will be created only if it doesn't exist.
+
+    Filenames starting with underscore (e.g. _my_file.py) will be skipped.
     """
-    help = 'seeds model objects from the specified apps'
+
+    help = 'seeds model objects from the specified Django apps'
 
     def add_arguments(self, parser):
-        parser.add_argument('apps', nargs='+', help='Names of the apps or "all"')
+        parser.add_argument('apps', nargs='+', help='Django app name(s) or "all" for all apps')
 
     def handle(self, *args, **options):
         apps_options = options.get('apps')
@@ -34,31 +44,52 @@ class Command(BaseCommand):
                 seed_items = getattr(module, 'seed_items', None)
 
                 if not isinstance(seed_items, (list, tuple)):
-                    message = self.style.ERROR(f'{module.__name__} should contain a list of tuple named "seed_items".')
-                    self.stdout.write(message)
+                    error_message = self.style.ERROR(
+                        f'{module.__name__} should contain a list of tuple named "seed_items".'
+                    )
+                    self.stdout.write(error_message)
                     continue
 
-                self._seed_items(seed_items)
+                self._seed_items(seed_items=seed_items)
+                self._run_post_seed(module=module)
 
     @staticmethod
-    def _get_app_configs(apps_options):
+    def _get_app_configs(apps_options) -> list:
         if 'all' in apps_options:
             return apps.get_app_configs()
         return [apps.get_app_config(label) for label in apps_options]
 
-    def _seed_items(self, items_to_seed: List[Model]):
-        for item in items_to_seed:
-            if not hasattr(item, 'pk'):
-                self.stdout.write(self.style.ERROR(f'{item} does not have an attribute "pk".'))
+    def _seed_items(self, seed_items: List[Model]) -> None:
+        for seed in seed_items:
+            if not hasattr(seed, 'pk'):
+                self.stdout.write(self.style.ERROR(f'{seed} does not have an attribute "pk".'))
                 continue
 
-            model_name = item.__class__.__name__
-            if item.__class__.objects.filter(pk=item.pk).exists():
-                message = self.style.WARNING(f'{model_name} with ID {item.pk} already exists. Seed is skipped.')
-                self.stdout.write(message)
+            model_name = seed.__class__.__name__
+            if seed.__class__.objects.filter(pk=seed.pk).exists():
+                warning_message = self.style.WARNING(
+                    f'{model_name} with ID {seed.pk} already exists. Seed is skipped.'
+                )
+                self.stdout.write(warning_message)
                 continue
+
             try:
-                item.save()
-                self.stdout.write(self.style.SUCCESS(f'{model_name} {item.pk} created.'))
+                seed.save()
             except Exception as exception:
-                self.stdout.write(self.style.ERROR(exception))
+                error_message = f'Failed to seed the item of type {seed.__class__.__name__} ' \
+                                f'with PK {seed.pk}:\n{exception}'
+                self.stdout.write(self.style.ERROR(error_message))
+            else:
+                self.stdout.write(self.style.SUCCESS(f'{model_name} {seed.pk} created.'))
+
+    def _run_post_seed(self, module) -> None:
+        post_seed = getattr(module, 'post_seed', None)
+        if callable(post_seed):
+            try:
+                post_seed()
+            except Exception as exception:
+                error_message = f'Failed to execute "post_seed" callable from {module.__name__}:\n{exception}'
+                self.stdout.write(self.style.ERROR(error_message))
+            else:
+                message = f'Successfully executed "post_seed" callable from {module.__name__}'
+                self.stdout.write(self.style.SUCCESS(message))

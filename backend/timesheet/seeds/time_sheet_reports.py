@@ -8,6 +8,7 @@ seed_items = []
 time_sheet_report_id = 1
 for index, daily_time_sheet in enumerate(employee.daily_time_sheets.all()[:100]):
     if index % 5:
+        # Create a single Time Sheet Report for the given employee and daily time sheet:
         time_sheet_report = TimeSheetReport(
             pk=time_sheet_report_id,
             hours=8,
@@ -18,6 +19,7 @@ for index, daily_time_sheet in enumerate(employee.daily_time_sheets.all()[:100])
         seed_items.append(time_sheet_report)
         continue
 
+    # Create two Time Sheet Reports for the given employee and daily time sheet:
     first_time_sheet_report = TimeSheetReport(
         pk=time_sheet_report_id,
         hours=6,

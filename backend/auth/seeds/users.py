@@ -1,19 +1,16 @@
 from auth.models import User
 
-super_admin = User(
-    pk=1,
-    email='admin@example.com',
-    name='Admin',
-    username='admin',
-    is_staff=True,
-    is_superuser=True,
-    is_admin=True,
-)
-
-super_admin.set_password('admin')
 
 seed_items = [
-    super_admin,
+    User(
+        pk=1,
+        email='admin@example.com',
+        name='Admin',
+        username='admin',
+        is_staff=True,
+        is_superuser=True,
+        is_admin=True,
+    ),
     User(
         pk=2,
         email='jon@snow.com',
@@ -41,3 +38,9 @@ seed_items = [
         username='tony',
     ),
 ]
+
+
+def post_seed():
+    for seed in seed_items:
+        seed.set_password('pass4user')
+        seed.save()
