@@ -4,6 +4,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets
 from auth.models import User
+from main.utils import paginate_queryset
 from timesheet.models import DailyTimeSheet, TimeSheetReport
 
 
@@ -33,13 +34,8 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
         return super(DailyTimeSheetViewSet, self).dispatch(request, *args, user_pk=user_pk, **kwargs)
 
     def list(self, request, **kwargs):
-        url_params = request.query_params
-        page = int(url_params.get('page', 1))
-        items_per_page = int(url_params.get('ipp', 50))
-        limit = items_per_page * page
-        offset = limit - items_per_page
-        filters = self._get_list_filters(url_params=url_params)
-        daily_time_sheets = DailyTimeSheet.objects.filter(filters)[offset:limit]
+        filters = self._get_list_filters(url_params=request.query_params)
+        daily_time_sheets = paginate_queryset(queryset=DailyTimeSheet.objects.filter(filters), request=request)
         serializer = DailyTimeSheetSerializer(daily_time_sheets, many=True)
         return Response(data=serializer.data)
 

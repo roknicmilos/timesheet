@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 from django.urls import reverse
 
 
@@ -23,3 +23,11 @@ def remove_duplicates(collection: list | tuple) -> list | tuple:
 def get_model_admin_change_details_url(obj: Model) -> str:
     content_type = ContentType.objects.get_for_model(obj.__class__)
     return reverse(f'admin:{content_type.app_label}_{content_type.model}_change', args=(obj.id,))
+
+
+def paginate_queryset(queryset: QuerySet, request) -> QuerySet:
+    page = int(request.query_params.get('page', 1))
+    items_per_page = int(request.query_params.get('ipp', 50))
+    limit = items_per_page * page
+    offset = limit - items_per_page
+    return queryset[offset:limit]

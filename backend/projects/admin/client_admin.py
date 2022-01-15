@@ -5,7 +5,7 @@ from projects.models import Client
 
 @admin.register(Client)
 class ClientAdmin(ModelAdmin):
+    fields = ('id', 'name', 'street', 'city', 'zip_code', 'country',)
     list_display = ('id', 'name', 'street', 'city', 'zip_code', 'country',)
     search_fields = ('name',)
     readonly_fields = ('id',)
-
