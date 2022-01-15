@@ -133,3 +133,9 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'timesheet_auth.User'
+
+SEEDS_ORDER = (
+    'timesheet_auth',
+    'projects',
+    'timesheet',
+)

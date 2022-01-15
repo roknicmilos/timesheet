@@ -1,10 +1,13 @@
+import random
 from auth.models import User
+from projects.models import Project
 from timesheet.models import TimeSheetReport
 
 employee = User.objects.get(username='frodo')
 
 seed_items = []
 
+projects = list(Project.objects.all())
 time_sheet_report_id = 1
 for index, daily_time_sheet in enumerate(employee.daily_time_sheets.all()[:100]):
     if index % 5:
@@ -13,7 +16,8 @@ for index, daily_time_sheet in enumerate(employee.daily_time_sheets.all()[:100])
             pk=time_sheet_report_id,
             hours=8,
             overtime_hours=0,
-            daily_time_sheet=daily_time_sheet
+            daily_time_sheet=daily_time_sheet,
+            project=random.choice(projects)
         )
         time_sheet_report_id += 1
         seed_items.append(time_sheet_report)
@@ -24,7 +28,8 @@ for index, daily_time_sheet in enumerate(employee.daily_time_sheets.all()[:100])
         pk=time_sheet_report_id,
         hours=6,
         overtime_hours=0,
-        daily_time_sheet=daily_time_sheet
+        daily_time_sheet=daily_time_sheet,
+        project=random.choice(projects)
     )
     time_sheet_report_id += 1
 
@@ -32,7 +37,8 @@ for index, daily_time_sheet in enumerate(employee.daily_time_sheets.all()[:100])
         pk=time_sheet_report_id,
         hours=2,
         overtime_hours=0,
-        daily_time_sheet=daily_time_sheet
+        daily_time_sheet=daily_time_sheet,
+        project=random.choice(projects)
     )
     time_sheet_report_id += 1
 

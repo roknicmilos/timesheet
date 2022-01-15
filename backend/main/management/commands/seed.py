@@ -1,8 +1,9 @@
 import os
-from typing import List
+from typing import List, Tuple
+from importlib import import_module
 from django.apps import apps
 from django.core.management.base import BaseCommand
-from importlib import import_module
+from django.conf import settings
 from django.db.models import Model
 
 
@@ -20,6 +21,9 @@ class Command(BaseCommand):
     with the specified "pk" exists, and it will be created only if it doesn't exist.
 
     Filenames starting with underscore (e.g. _my_file.py) will be skipped.
+
+    If you want to seed all apps, but in a specific order, you can define SEEDS_ORDER tuple
+    in settings.py that will contain app names in the desired order.
     """
 
     help = 'seeds model objects from the specified Django apps'
@@ -28,8 +32,8 @@ class Command(BaseCommand):
         parser.add_argument('apps', nargs='+', help='Django app name(s) or "all" for all apps')
 
     def handle(self, *args, **options):
-        apps_options = options.get('apps')
-        app_configs = self._get_app_configs(apps_options)
+        app_names = options.get('apps')
+        app_configs = self._get_app_configs(app_names)
 
         for app_config in app_configs:
             seeds_path = os.path.join(app_config.path, 'seeds')
@@ -53,11 +57,21 @@ class Command(BaseCommand):
                 self._seed_items(seed_items=seed_items)
                 self._run_post_seed(module=module)
 
-    @staticmethod
-    def _get_app_configs(apps_options) -> list:
+    @classmethod
+    def _get_app_configs(cls, apps_options) -> list:
         if 'all' in apps_options:
+            if seeds_order := getattr(settings, 'SEEDS_ORDER', None):
+                return cls._get_ordered_app_configs(app_names=seeds_order)
             return apps.get_app_configs()
-        return [apps.get_app_config(label) for label in apps_options]
+        return [apps.get_app_config(app_name) for app_name in apps_options]
+
+    @staticmethod
+    def _get_ordered_app_configs(app_names: Tuple[str]) -> list:
+        app_configs = [apps.get_app_config(app_name) for app_name in app_names]
+        for app_config in apps.get_app_configs():
+            if app_config not in app_configs:
+                app_configs.append(app_config)
+        return app_configs
 
     def _seed_items(self, seed_items: List[Model]) -> None:
         for seed in seed_items:

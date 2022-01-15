@@ -23,3 +23,9 @@ class TimeSheetReport(BaseModel):
         on_delete=models.CASCADE,
         related_name='time_sheet_reports',
     )
+    project = models.ForeignKey(
+        to='projects.Project',
+        verbose_name='project',
+        on_delete=models.PROTECT,
+        related_name='time_sheet_reports',
+    )
