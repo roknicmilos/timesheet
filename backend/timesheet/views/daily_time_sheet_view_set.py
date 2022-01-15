@@ -33,16 +33,22 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
         return super(DailyTimeSheetViewSet, self).dispatch(request, *args, user_pk=user_pk, **kwargs)
 
     def list(self, request, **kwargs):
-        daily_time_sheets = DailyTimeSheet.objects.filter(self._get_list_filters(request=request))
+        url_params = request.query_params
+        page = int(url_params.get('page', 1))
+        items_per_page = int(url_params.get('ipp', 50))
+        limit = items_per_page * page
+        offset = limit - items_per_page
+        filters = self._get_list_filters(url_params=url_params)
+        daily_time_sheets = DailyTimeSheet.objects.filter(filters)[offset:limit]
         serializer = DailyTimeSheetSerializer(daily_time_sheets, many=True)
         return Response(data=serializer.data)
 
-    def _get_list_filters(self, request) -> Q:
+    def _get_list_filters(self, url_params: dict) -> Q:
         filters = Q(employee=self.user)
-        if 'from' in request.query_params:
-            filters &= Q(date__gte=request.query_params.get('from'))
-        if 'until' in request.query_params:
-            filters &= Q(date__lte=request.query_params.get('until'))
+        if 'from' in url_params:
+            filters &= Q(date__gte=url_params.get('from'))
+        if 'until' in url_params:
+            filters &= Q(date__lte=url_params.get('until'))
         return filters
 
     def create(self, request, **kwargs):
