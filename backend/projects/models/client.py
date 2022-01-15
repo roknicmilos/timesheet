@@ -32,3 +32,6 @@ class Client(BaseModel):
             zip_code=self.zip_code,
             country=self.country
         )
+
+    def __str__(self):
+        return self.name

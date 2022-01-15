@@ -27,7 +27,7 @@ class ModelAdmin(admin.ModelAdmin):
         if self.should_use_add_form_fields(request, obj=obj):
             self.fields = self.add_form_fields
 
-        if self.includes_timestamped_fields and self.fields:
+        if self.includes_timestamped_fields and self.fields and obj:
             self.fields += self.timestamped_fields
 
     def should_use_add_form_fields(self, request, obj: BaseModel = None) -> bool:
@@ -39,7 +39,7 @@ class ModelAdmin(admin.ModelAdmin):
         if self.should_use_add_form_fieldsets(request, obj=obj):
             self.fieldsets = self.add_form_fieldsets
 
-        elif self.includes_timestamped_fields and self.fieldsets:
+        elif self.includes_timestamped_fields and self.fieldsets and obj:
             self.extend_fieldsets_with_timestamped_fields()
 
     def extend_fieldsets_with_timestamped_fields(self, fieldset_index: int = 0) -> None:
