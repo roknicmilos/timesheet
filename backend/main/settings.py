@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'main',
     'auth',
     'timesheet',
+    'projects',
 
     'rest_framework',
 ]

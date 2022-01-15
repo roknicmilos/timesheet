@@ -4,8 +4,6 @@ from main.settings import AUTH_USER_MODEL
 
 
 class DailyTimeSheet(BaseModel):
-    class Meta:
-        db_table = 'core_daily_time_sheet'
 
     date = models.DateField(
         verbose_name='date',

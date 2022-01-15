@@ -18,9 +18,6 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField(unique=True, verbose_name='date')),
             ],
-            options={
-                'db_table': 'core_daily_time_sheet',
-            },
         ),
         migrations.CreateModel(
             name='TimeSheetReport',
@@ -32,7 +29,6 @@ class Migration(migrations.Migration):
                 ('daily_time_sheet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='time_sheet_reports', to='timesheet.dailytimesheet', verbose_name='daily time sheet')),
             ],
             options={
-                'db_table': 'core_time_sheet_report',
                 'default_related_name': 'time_sheet_reports',
             },
         ),

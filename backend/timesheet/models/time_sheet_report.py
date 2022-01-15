@@ -4,7 +4,6 @@ from main.models import BaseModel
 
 class TimeSheetReport(BaseModel):
     class Meta:
-        db_table = 'core_time_sheet_report'
         default_related_name = 'time_sheet_reports'
 
     hours = models.FloatField(
