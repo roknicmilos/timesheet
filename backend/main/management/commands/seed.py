@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Type
 from importlib import import_module
 from django.apps import apps
 from django.core.management.base import BaseCommand
@@ -28,6 +28,10 @@ class Command(BaseCommand):
 
     help = 'seeds model objects from the specified Django apps'
 
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+        self.seeded_models: List[Type[Model]] = []
+
     def add_arguments(self, parser):
         parser.add_argument('apps', nargs='+', help='Django app name(s) or "all" for all apps')
 
@@ -35,6 +39,11 @@ class Command(BaseCommand):
         app_names = options.get('apps')
         app_configs = self._get_app_configs(app_names)
 
+        self._seed(app_configs=app_configs)
+        self._post_seed()
+
+
+    def _seed(self, app_configs: list) -> None:
         for app_config in app_configs:
             seeds_path = os.path.join(app_config.path, 'seeds')
             if not os.path.isdir(seeds_path):
@@ -55,7 +64,7 @@ class Command(BaseCommand):
                     continue
 
                 self._seed_items(seed_items=seed_items)
-                self._run_post_seed(module=module)
+                self._post_seed_items(module=module)
 
     @classmethod
     def _get_app_configs(cls, apps_options) -> list:
@@ -94,9 +103,11 @@ class Command(BaseCommand):
                                 f'with PK {seed.pk}:\n{exception}'
                 self.stdout.write(self.style.ERROR(error_message))
             else:
+                if seed.__class__ not in self.seeded_models:
+                    self.seeded_models.append(seed.__class__)
                 self.stdout.write(self.style.SUCCESS(f'{model_name} {seed.pk} created.'))
 
-    def _run_post_seed(self, module) -> None:
+    def _post_seed_items(self, module) -> None:
         post_seed = getattr(module, 'post_seed', None)
         if callable(post_seed):
             try:
@@ -107,3 +118,53 @@ class Command(BaseCommand):
             else:
                 message = f'Successfully executed "post_seed" callable from {module.__name__}'
                 self.stdout.write(self.style.SUCCESS(message))
+
+    def _post_seed(self):
+        """
+        Sets id column sequence to the correct value for all seeded tables.
+        Saving a new model instance that has PK field set to certain value
+        will not trigger the update for this sequence, which is why it's
+        necessary to set it to the correct value afterwards.
+        """
+
+        for model_class in self.seeded_models:
+            table_name = model_class._meta.db_table
+            try:
+                has_applied_fix = self._fix_db_table_id_sequence_if_incorrect(table_name=model_class._meta.db_table)
+            except Exception as exception:
+                error_message = f'Failed to execute the function for fixing the id (primary key) sequence ' \
+                                f'for table "{table_name}" (model {model_class.__name__}):\n{exception}'
+                self.stdout.write(self.style.ERROR(error_message))
+            else:
+                if has_applied_fix:
+                    message = f'Fixed id (primary key) sequence for table {table_name} (model {Model})'
+                    self.stdout.write(self.style.SUCCESS(message))
+                else:
+                    message = f'Did not fix id (primary key) sequence for table {table_name} ' \
+                              f'(model {Model}) because the sequence is correct'
+                    self.stdout.write(message)
+
+
+    @staticmethod
+    def _fix_db_table_id_sequence_if_incorrect(table_name: str) -> bool:
+        """Returns True if the fix was applied, and False if the fix was unnecessary and therefore not applied"""
+
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT MAX(id) FROM {table_name};")
+            results = cursor.fetchall()
+            max_id = results[0][0]
+
+            cursor.execute(f"SELECT nextval('{table_name}_id_seq');")
+            results = cursor.fetchall()
+            next_id = results[0][0]
+
+            if max_id >= next_id:
+                cursor.execute(
+                    f"SELECT setval('{table_name}_id_seq', COALESCE("
+                    f"(SELECT MAX(id)+1 FROM {table_name}), 1"
+                    "), false);"
+                )
+                return True
+
+            return False

@@ -2,13 +2,15 @@ import random
 from timesheet.models import TimeSheetReport
 from auth.models import User
 from auth.seeds.users import seed_items as user_seeds
-from projects.models import Project
+from projects.models import Project, Category
 from projects.seeds.project_seeds import seed_items as project_seeds
+from projects.seeds.categories import seed_items as category_seeds
 
 
 seed_items = []
 
 projects = list(Project.objects.filter(pk__in=[project.pk for project in project_seeds]))
+categories = list(Category.objects.filter(pk__in=[category.pk for category in category_seeds]))
 
 time_sheet_report_id = 1
 for employee in User.objects.filter(pk__in=[user.pk for user in user_seeds]):
@@ -23,7 +25,8 @@ for employee in User.objects.filter(pk__in=[user.pk for user in user_seeds]):
                 hours=8,
                 overtime_hours=0,
                 daily_time_sheet=daily_time_sheet,
-                project=random.choice(projects)
+                project=random.choice(projects),
+                category=random.choice(categories),
             )
             time_sheet_report_id += 1
             seed_items.append(time_sheet_report)
@@ -35,7 +38,8 @@ for employee in User.objects.filter(pk__in=[user.pk for user in user_seeds]):
             hours=6,
             overtime_hours=0,
             daily_time_sheet=daily_time_sheet,
-            project=random.choice(projects)
+            project=random.choice(projects),
+            category=random.choice(categories),
         )
         time_sheet_report_id += 1
 
@@ -44,7 +48,8 @@ for employee in User.objects.filter(pk__in=[user.pk for user in user_seeds]):
             hours=3,
             overtime_hours=1,
             daily_time_sheet=daily_time_sheet,
-            project=random.choice(projects)
+            project=random.choice(projects),
+            category=random.choice(categories),
         )
         time_sheet_report_id += 1
 
