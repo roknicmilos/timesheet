@@ -1,2 +1,2 @@
-from timesheet.factories.daily_time_sheet import DailyTimeSheetFactory
-from timesheet.factories.time_sheet_report import TimeSheetReportFactory
+from timesheet.factories.daily_time_sheet_factory import DailyTimeSheetFactory
+from timesheet.factories.time_sheet_report_factory import TimeSheetReportFactory

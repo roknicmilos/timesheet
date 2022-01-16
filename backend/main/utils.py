@@ -1,6 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Model, QuerySet
 from django.urls import reverse
+from datetime import datetime as datetime_type
+from main.settings import DATETIME_FORMAT
 
 
 def mask_string(string: str, masked_chars_count: int = None, starts_from_end: bool = True) -> str:
@@ -31,3 +33,6 @@ def paginate_queryset(queryset: QuerySet, request) -> QuerySet:
     limit = items_per_page * page
     offset = limit - items_per_page
     return queryset[offset:limit]
+
+def format_datetime(datetime: datetime_type) -> str:
+    return datetime.strftime(DATETIME_FORMAT)

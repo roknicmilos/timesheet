@@ -139,3 +139,9 @@ SEEDS_ORDER = (
     'projects',
     'timesheet',
 )
+
+DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
+
+REST_FRAMEWORK = {
+    'DATETIME_FORMAT': DATETIME_FORMAT,
+}

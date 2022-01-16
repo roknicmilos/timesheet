@@ -1,8 +1,11 @@
 from datetime import timedelta, date
 from typing import List
 from django.utils import timezone
+from freezegun import freeze_time
 from rest_framework.reverse import reverse
 from auth.factories import UserFactory
+from main.utils import format_datetime
+from projects.factories import ProjectFactory
 from timesheet.factories import DailyTimeSheetFactory
 from timesheet.models import DailyTimeSheet
 from main.tests.mixins import APITestCase
@@ -62,6 +65,9 @@ class TestDailyTimeSheetViewSet(APITestCase):
                 'overtime_hours': time_sheet_report.overtime_hours,
                 'description': time_sheet_report.description,
                 'daily_time_sheet': daily_time_sheet.pk,
+                'project': time_sheet_report.project.pk if time_sheet_report.project else None,
+                'created': format_datetime(datetime=time_sheet_report.created),
+                'modified': format_datetime(datetime=time_sheet_report.modified),
             })
 
         return {
@@ -69,6 +75,8 @@ class TestDailyTimeSheetViewSet(APITestCase):
             'time_sheet_reports': time_sheet_reports_data,
             'date': daily_time_sheet.date.isoformat(),
             'employee': daily_time_sheet.employee.pk,
+            'created': format_datetime(datetime=daily_time_sheet.created),
+            'modified': format_datetime(datetime=daily_time_sheet.modified),
         }
 
     def test_should_return_404_instead_of_daily_time_sheet_list_of_the_user_when_user_does_not_exist(self):
@@ -130,6 +138,7 @@ class TestDailyTimeSheetViewSet(APITestCase):
         ]
         self.assertEqual(actual_response_data, expected_response_data)
 
+    @freeze_time('2022-01-01')
     def test_should_create_daily_time_sheet_without_time_sheet_reports_and_return_it(self):
         user = UserFactory.create()
         request_data = {
@@ -138,10 +147,11 @@ class TestDailyTimeSheetViewSet(APITestCase):
                     'hours': 8.0,
                     'overtime_hours': 0.0,
                     'description': 'First time sheet report',
-                    'daily_time_sheet': 1
+                    'daily_time_sheet': 1,
                 },
             ],
             'date': DailyTimeSheetFactory.next_date.isoformat(),
+
         }
         next_id = DailyTimeSheetFactory.next_id
         url = self.build_daily_time_sheets_list_url(user_id=user.pk)
@@ -153,6 +163,8 @@ class TestDailyTimeSheetViewSet(APITestCase):
             'employee': user.pk,
             'date': request_data.get('date'),
             'time_sheet_reports': [],
+            'created': format_datetime(datetime=timezone.now()),
+            'modified': format_datetime(datetime=timezone.now()),
         }
         self.assertEqual(actual_response_data, expected_response_data)
 
@@ -222,6 +234,7 @@ class TestDailyTimeSheetViewSet(APITestCase):
         }
         self.assertEqual(actual_response_data, expected_response_data)
 
+    @freeze_time('2022-01-01')
     def test_should_only_update_time_sheet_report_by_overriding_all_of_them(self):
         daily_time_sheet = DailyTimeSheetFactory.create(time_sheet_report_count=3)
         self.assertEqual(daily_time_sheet.time_sheet_reports.count(), 3)
@@ -232,18 +245,21 @@ class TestDailyTimeSheetViewSet(APITestCase):
             user_id=daily_time_sheet.employee.pk,
             pk=daily_time_sheet.pk
         )
+        new_project = ProjectFactory.create()
         time_sheet_reports_data = [
             {
                 'hours': time_sheet_reports[0].hours + 1,
                 'overtime_hours': time_sheet_reports[0].overtime_hours,
                 'description': time_sheet_reports[0].description,
                 'daily_time_sheet': daily_time_sheet.pk,
+                'project': new_project.pk,
             },
             {
                 'hours': time_sheet_reports[1].hours,
                 'overtime_hours': time_sheet_reports[1].overtime_hours + 1,
                 'description': f'{time_sheet_reports[1].description} updated',
                 'daily_time_sheet': daily_time_sheet.pk,
+                'project': new_project.pk,
             },
         ]
         request_data = {
@@ -259,10 +275,14 @@ class TestDailyTimeSheetViewSet(APITestCase):
             {
                 **time_sheet_reports_data[0],
                 'id': time_sheet_reports[0].id + len(time_sheet_reports),
+                'created': format_datetime(datetime=timezone.now()),
+                'modified': format_datetime(datetime=timezone.now()),
             },
             {
                 **time_sheet_reports_data[1],
                 'id': time_sheet_reports[1].id + len(time_sheet_reports),
+                'created': format_datetime(datetime=timezone.now()),
+                'modified': format_datetime(datetime=timezone.now()),
             },
         ]
         self.assertEqual(actual_response_data, expected_response_data)
