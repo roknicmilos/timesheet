@@ -1,9 +1,11 @@
 from django.db.models import Q
-from django.http import JsonResponse
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets
-from auth.models import User
+from auth.authentication import TokenAuthentication
+from auth.permissions import HasAccessToUserResources
 from main.utils import paginate_queryset
 from timesheet.models import DailyTimeSheet, TimeSheetReport
 
@@ -21,17 +23,18 @@ class DailyTimeSheetSerializer(serializers.ModelSerializer):
         model = DailyTimeSheet
         fields = '__all__'
 
+    def validate(self, attrs):
+        attrs = super(DailyTimeSheetSerializer, self).validate(attrs)
+
+        if DailyTimeSheet.objects.filter(date=attrs.get('date'), employee=attrs.get('employee')).exists():
+            raise ValidationError('Daily time sheet with this user and date already exists')
+
+        return attrs
+
 
 class DailyTimeSheetViewSet(viewsets.ViewSet):
-    user: User = None
-
-    def dispatch(self, request, *args, user_pk=None, **kwargs):
-        try:
-            self.user = User.objects.get(pk=user_pk)
-        except User.DoesNotExist:
-            return JsonResponse(data={'detail': 'User not found.'}, status=404)
-
-        return super(DailyTimeSheetViewSet, self).dispatch(request, *args, user_pk=user_pk, **kwargs)
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, HasAccessToUserResources]
 
     def list(self, request, **kwargs):
         filters = self._get_list_filters(url_params=request.query_params)
@@ -40,7 +43,7 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
         return Response(data=serializer.data)
 
     def _get_list_filters(self, url_params: dict) -> Q:
-        filters = Q(employee=self.user)
+        filters = Q(employee=self.request.user)
         if 'from' in url_params:
             filters &= Q(date__gte=url_params.get('from'))
         if 'until' in url_params:
@@ -48,7 +51,7 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
         return filters
 
     def create(self, request, **kwargs):
-        serializer = DailyTimeSheetSerializer(data={**request.data, 'employee': self.user.pk})
+        serializer = DailyTimeSheetSerializer(data={**request.data, 'employee': self.request.user.pk})
         if serializer.is_valid():
             daily_time_sheet = DailyTimeSheet.objects.create(**serializer.validated_data)
             serializer = DailyTimeSheetSerializer(daily_time_sheet)
@@ -56,12 +59,12 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
         return Response(data={'errors': serializer.errors}, status=400)
 
     def retrieve(self, request, pk=None, **kwargs):
-        daily_time_sheets = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.user)
+        daily_time_sheets = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.request.user)
         serializer = DailyTimeSheetSerializer(daily_time_sheets)
         return Response(data=serializer.data)
 
     def partial_update(self, request, pk=None, **kwargs):
-        daily_time_sheet = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.user)
+        daily_time_sheet = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.request.user)
         data = self._prepare_time_sheet_reports_data(request=request, daily_time_sheet_id=pk)
         time_sheet_report_serializer = TimeSheetReportSerializer(data=data, many=True)
         if time_sheet_report_serializer.is_valid():
@@ -79,6 +82,6 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
         return data
 
     def destroy(self, request, pk=None, **kwargs):
-        daily_time_sheet = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.user)
+        daily_time_sheet = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.request.user)
         daily_time_sheet.delete()
         return Response(status=204)

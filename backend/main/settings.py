@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'projects',
 
     'rest_framework',
+    'rest_framework.authtoken',
     'django_extensions',
 ]
 
@@ -144,4 +145,7 @@ DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
 
 REST_FRAMEWORK = {
     'DATETIME_FORMAT': DATETIME_FORMAT,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'auth.authentication.TokenAuthentication',
+    ]
 }

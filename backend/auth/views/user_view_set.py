@@ -1,7 +1,11 @@
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers, viewsets
+from auth.authentication import TokenAuthentication
 from auth.models import User
+from auth.permissions import IsAdmin
 from main.utils import mask_string
 
 
@@ -31,6 +35,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserViewSet(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     @staticmethod
     def list(request) -> Response:
