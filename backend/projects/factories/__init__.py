@@ -1,2 +1,3 @@
 from projects.factories.client_factory import ClientFactory
 from projects.factories.project_factory import ProjectFactory
+from projects.factories.category_factory import CategoryFactory

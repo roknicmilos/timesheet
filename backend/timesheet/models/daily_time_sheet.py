@@ -4,10 +4,16 @@ from main.settings import AUTH_USER_MODEL
 
 
 class DailyTimeSheet(BaseModel):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['date', 'employee'],
+                name='%(app_label)s_%(class)s_unq__date__employee'
+            ),
+        ]
 
     date = models.DateField(
         verbose_name='date',
-        unique=True,
     )
     employee = models.ForeignKey(
         to=AUTH_USER_MODEL,

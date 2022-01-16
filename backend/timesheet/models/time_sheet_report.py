@@ -1,5 +1,8 @@
+from datetime import date
 from django.db import models
+from auth.models import User
 from main.models import BaseModel
+from projects.models import Client
 
 
 class TimeSheetReport(BaseModel):
@@ -29,3 +32,21 @@ class TimeSheetReport(BaseModel):
         on_delete=models.PROTECT,
         related_name='time_sheet_reports',
     )
+    category = models.ForeignKey(
+        to='projects.Category',
+        verbose_name='category',
+        on_delete=models.PROTECT,
+        related_name='time_sheet_reports',
+    )
+
+    @property
+    def employee(self) -> User:
+        return self.daily_time_sheet.employee
+
+    @property
+    def client(self) -> Client:
+        return self.project.client
+
+    @property
+    def date(self) -> date:
+        return self.daily_time_sheet.date

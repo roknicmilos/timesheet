@@ -34,5 +34,21 @@ def paginate_queryset(queryset: QuerySet, request) -> QuerySet:
     offset = limit - items_per_page
     return queryset[offset:limit]
 
+
 def format_datetime(datetime: datetime_type) -> str:
     return datetime.strftime(DATETIME_FORMAT)
+
+
+def get_bool_url_param_value(url_params: dict, param_name: str) -> bool | None:
+    if param_name not in url_params:
+        return None
+
+    param_value_str = url_params.get(param_name).lower()
+
+    if param_value_str == 'true':
+        return True
+
+    if param_value_str == 'false':
+        return False
+
+    return None

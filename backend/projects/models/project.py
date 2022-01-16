@@ -32,3 +32,6 @@ class Project(BaseModel):
         verbose_name='client',
         on_delete=models.PROTECT,
     )
+
+    def __str__(self):
+        return self.name

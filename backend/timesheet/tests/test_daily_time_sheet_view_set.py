@@ -5,7 +5,7 @@ from freezegun import freeze_time
 from rest_framework.reverse import reverse
 from auth.factories import UserFactory
 from main.utils import format_datetime
-from projects.factories import ProjectFactory
+from projects.factories import ProjectFactory, CategoryFactory
 from timesheet.factories import DailyTimeSheetFactory
 from timesheet.models import DailyTimeSheet
 from main.tests.mixins import APITestCase
@@ -65,7 +65,8 @@ class TestDailyTimeSheetViewSet(APITestCase):
                 'overtime_hours': time_sheet_report.overtime_hours,
                 'description': time_sheet_report.description,
                 'daily_time_sheet': daily_time_sheet.pk,
-                'project': time_sheet_report.project.pk if time_sheet_report.project else None,
+                'project': time_sheet_report.project.pk,
+                'category': time_sheet_report.category.pk,
                 'created': format_datetime(datetime=time_sheet_report.created),
                 'modified': format_datetime(datetime=time_sheet_report.modified),
             })
@@ -246,6 +247,7 @@ class TestDailyTimeSheetViewSet(APITestCase):
             pk=daily_time_sheet.pk
         )
         new_project = ProjectFactory.create()
+        new_category = CategoryFactory.create()
         time_sheet_reports_data = [
             {
                 'hours': time_sheet_reports[0].hours + 1,
@@ -253,6 +255,7 @@ class TestDailyTimeSheetViewSet(APITestCase):
                 'description': time_sheet_reports[0].description,
                 'daily_time_sheet': daily_time_sheet.pk,
                 'project': new_project.pk,
+                'category': new_project.pk,
             },
             {
                 'hours': time_sheet_reports[1].hours,
@@ -260,6 +263,7 @@ class TestDailyTimeSheetViewSet(APITestCase):
                 'description': f'{time_sheet_reports[1].description} updated',
                 'daily_time_sheet': daily_time_sheet.pk,
                 'project': new_project.pk,
+                'category': new_project.pk,
             },
         ]
         request_data = {
