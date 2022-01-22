@@ -4,11 +4,11 @@ from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.reverse import reverse
 from auth.factories import UserFactory
+from main.tests import APITestCase
 from main.utils import format_datetime
 from projects.factories import ProjectFactory, CategoryFactory
 from timesheet.factories import DailyTimeSheetFactory
 from timesheet.models import DailyTimeSheet
-from main.tests.mixins import APITestCase
 
 
 class TestDailyTimeSheetViewSet(APITestCase):
@@ -21,6 +21,11 @@ class TestDailyTimeSheetViewSet(APITestCase):
         cls.eight_days_ago = today - timedelta(days=8)
         cls.seven_days_ahead = today + timedelta(days=7)
         cls.eight_days_ahead = today + timedelta(days=8)
+        cls.user = UserFactory.create()
+
+    def setUp(self) -> None:
+        super(TestDailyTimeSheetViewSet, self).setUp()
+        self.authenticate(user=self.user)
 
     def tearDown(self) -> None:
         super(TestDailyTimeSheetViewSet, self).tearDown()
@@ -37,9 +42,12 @@ class TestDailyTimeSheetViewSet(APITestCase):
         return reverse('api:daily-time-sheets-detail', args=(user_id, pk))
 
     def test_should_return_list_of_all_daily_time_sheets_of_the_user(self):
-        user = UserFactory.create()
-        daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=user, time_sheet_report_count=3)
-        response = self.client.get(reverse('api:daily-time-sheets-list', args=(user.pk,)))
+        daily_time_sheets = DailyTimeSheetFactory.create_batch(
+            count=3,
+            employee=self.user,
+            time_sheet_report_count=3
+        )
+        response = self.client.get(reverse('api:daily-time-sheets-list', args=(self.user.pk,)))
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
         self.assertIsInstance(actual_response_data, list)
@@ -80,22 +88,10 @@ class TestDailyTimeSheetViewSet(APITestCase):
             'modified': format_datetime(datetime=daily_time_sheet.modified),
         }
 
-    def test_should_return_404_instead_of_daily_time_sheet_list_of_the_user_when_user_does_not_exist(self):
-        user = UserFactory.create()
-        DailyTimeSheetFactory.create_batch(count=2, employee=user)
-        response = self.client.get(reverse('api:daily-time-sheets-list', args=(UserFactory.next_id,)))
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'User not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)
-
     def test_should_return_daily_time_sheet_list_of_the_user_filtered_by_from_date(self):
-        user = UserFactory.create()
-        daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=user)
+        daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=self.user)
         self._update_daily_time_sheet_date(daily_time_sheet=daily_time_sheets[0], new_date=self.eight_days_ago)
-        url = self.build_daily_time_sheets_list_url(user_id=user.pk, **{'from': self.seven_days_ago.isoformat()})
+        url = self.build_daily_time_sheets_list_url(user_id=self.user.pk, **{'from': self.seven_days_ago.isoformat()})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
@@ -110,10 +106,9 @@ class TestDailyTimeSheetViewSet(APITestCase):
         daily_time_sheet.save()
 
     def test_should_return_daily_time_sheet_list_of_the_user_filtered_by_until_date(self):
-        user = UserFactory.create()
-        daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=user)
+        daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=self.user)
         self._update_daily_time_sheet_date(daily_time_sheet=daily_time_sheets[-1], new_date=self.eight_days_ahead)
-        url = self.build_daily_time_sheets_list_url(user_id=user.pk, until=self.seven_days_ahead.isoformat())
+        url = self.build_daily_time_sheets_list_url(user_id=self.user.pk, until=self.seven_days_ahead.isoformat())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
@@ -123,12 +118,11 @@ class TestDailyTimeSheetViewSet(APITestCase):
         self.assertEqual(actual_response_data, expected_response_data)
 
     def test_should_return_daily_time_sheet_list_of_the_user_filtered_by_from_and_until_dates(self):
-        user = UserFactory.create()
-        daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=user)
+        daily_time_sheets = DailyTimeSheetFactory.create_batch(count=3, employee=self.user)
         self._update_daily_time_sheet_date(daily_time_sheet=daily_time_sheets[0], new_date=self.eight_days_ago)
         self._update_daily_time_sheet_date(daily_time_sheet=daily_time_sheets[-1], new_date=self.eight_days_ahead)
         url_params = {'from': self.seven_days_ago, 'until': self.seven_days_ahead}
-        url = self.build_daily_time_sheets_list_url(user_id=user.pk, **url_params)
+        url = self.build_daily_time_sheets_list_url(user_id=self.user.pk, **url_params)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()
@@ -141,7 +135,6 @@ class TestDailyTimeSheetViewSet(APITestCase):
 
     @freeze_time('2022-01-01')
     def test_should_create_daily_time_sheet_without_time_sheet_reports_and_return_it(self):
-        user = UserFactory.create()
         request_data = {
             'time_sheet_reports': [
                 {
@@ -155,13 +148,13 @@ class TestDailyTimeSheetViewSet(APITestCase):
 
         }
         next_id = DailyTimeSheetFactory.next_id
-        url = self.build_daily_time_sheets_list_url(user_id=user.pk)
+        url = self.build_daily_time_sheets_list_url(user_id=self.user.pk)
         response = self.client.post(url, json=request_data)
         self.assertEqual(response.status_code, 201)
         actual_response_data = response.json()
         expected_response_data = {
             'id': next_id,
-            'employee': user.pk,
+            'employee': self.user.pk,
             'date': request_data.get('date'),
             'time_sheet_reports': [],
             'created': format_datetime(datetime=timezone.now()),
@@ -169,21 +162,8 @@ class TestDailyTimeSheetViewSet(APITestCase):
         }
         self.assertEqual(actual_response_data, expected_response_data)
 
-    def test_should_return_404_instead_of_creating_daily_time_sheet_when_user_does_not_exist(self):
-        request_data = {
-            'date': DailyTimeSheetFactory.next_date.isoformat(),
-        }
-        url = self.build_daily_time_sheets_list_url(user_id=UserFactory.next_id)
-        response = self.client.post(url, json=request_data)
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'User not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)
-
     def test_should_return_daily_time_sheet_for_the_user(self):
-        daily_time_sheet = DailyTimeSheetFactory.create()
+        daily_time_sheet = DailyTimeSheetFactory.create(employee=self.user)
         url = self.build_daily_time_sheets_detail_url(
             user_id=daily_time_sheet.employee.pk,
             pk=daily_time_sheet.pk
@@ -194,50 +174,12 @@ class TestDailyTimeSheetViewSet(APITestCase):
         expected_response_data = self._get_expected_detail_response_data(daily_time_sheet=daily_time_sheet)
         self.assertEqual(actual_response_data, expected_response_data)
 
-    def test_should_return_404_instead_of_daily_time_sheet_when_the_user_does_not_exist(self):
-        daily_time_sheet = DailyTimeSheetFactory.create()
-        url = self.build_daily_time_sheets_detail_url(user_id=UserFactory.next_id, pk=daily_time_sheet.pk)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'User not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)
-
-    def test_should_return_404_instead_of_daily_time_sheet_when_it_does_not_exist(self):
-        daily_time_sheet = DailyTimeSheetFactory.create()
-        url = self.build_daily_time_sheets_detail_url(
-            user_id=daily_time_sheet.employee.pk,
-            pk=DailyTimeSheetFactory.next_id
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'Not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)
-
-    def test_should_return_404_instead_of_daily_time_sheet_when_daily_time_sheet_does_not_belong_to_the_user(self):
-        daily_time_sheet = DailyTimeSheetFactory.create()
-        another_daily_time_sheet = DailyTimeSheetFactory.create()
-        self.assertNotEqual(daily_time_sheet.employee, another_daily_time_sheet.employee)
-        url = self.build_daily_time_sheets_detail_url(
-            user_id=daily_time_sheet.employee.pk,
-            pk=another_daily_time_sheet.pk
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'Not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)
-
     @freeze_time('2022-01-01')
     def test_should_only_update_time_sheet_report_by_overriding_all_of_them(self):
-        daily_time_sheet = DailyTimeSheetFactory.create(time_sheet_report_count=3)
+        daily_time_sheet = DailyTimeSheetFactory.create(
+            time_sheet_report_count=3,
+            employee=self.user
+        )
         self.assertEqual(daily_time_sheet.time_sheet_reports.count(), 3)
         time_sheet_reports = list(daily_time_sheet.time_sheet_reports.all())
         another_user = UserFactory.create()
@@ -255,7 +197,7 @@ class TestDailyTimeSheetViewSet(APITestCase):
                 'description': time_sheet_reports[0].description,
                 'daily_time_sheet': daily_time_sheet.pk,
                 'project': new_project.pk,
-                'category': new_project.pk,
+                'category': new_category.pk,
             },
             {
                 'hours': time_sheet_reports[1].hours,
@@ -263,7 +205,7 @@ class TestDailyTimeSheetViewSet(APITestCase):
                 'description': f'{time_sheet_reports[1].description} updated',
                 'daily_time_sheet': daily_time_sheet.pk,
                 'project': new_project.pk,
-                'category': new_project.pk,
+                'category': new_category.pk,
             },
         ]
         request_data = {
@@ -291,41 +233,3 @@ class TestDailyTimeSheetViewSet(APITestCase):
         ]
         self.assertEqual(actual_response_data, expected_response_data)
         self.assertEqual(daily_time_sheet.time_sheet_reports.count(), 2)  # the last one should be deleted
-
-    def test_should_return_404_instead_of_updating_daily_time_sheet_when_user_does_not_exits(self):
-        daily_time_sheet = DailyTimeSheetFactory.create()
-        url = self.build_daily_time_sheets_detail_url(user_id=UserFactory.next_id, pk=daily_time_sheet.pk)
-        response = self.client.patch(url, json={})
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'User not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)
-
-    def test_should_return_404_instead_of_updating_daily_time_sheet_when_it_does_not_exits(self):
-        user = UserFactory.create()
-        url = self.build_daily_time_sheets_detail_url(user_id=user.pk, pk=DailyTimeSheetFactory.next_id)
-        response = self.client.patch(url, json={})
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'Not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)
-
-    def test_should_return_404_instead_of_updating_daily_time_sheet_when_daily_time_sheet_does_not_belong_to_the_user(
-            self):
-        daily_time_sheet = DailyTimeSheetFactory.create()
-        another_daily_time_sheet = DailyTimeSheetFactory.create()
-        url = self.build_daily_time_sheets_detail_url(
-            user_id=daily_time_sheet.employee.pk,
-            pk=another_daily_time_sheet.pk
-        )
-        response = self.client.patch(url, json={})
-        self.assertEqual(response.status_code, 404)
-        actual_response_data = response.json()
-        expected_response_data = {
-            'detail': 'Not found.'
-        }
-        self.assertEqual(actual_response_data, expected_response_data)

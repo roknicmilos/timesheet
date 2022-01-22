@@ -2,11 +2,20 @@ from typing import List
 from rest_framework.reverse import reverse
 from auth.factories import UserFactory
 from auth.models import User
-from main.tests.mixins import APITestCase
 from auth.views.user_view_set import UserSerializer
+from main.tests import APITestCase
 
 
 class TestUserViewSet(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(TestUserViewSet, cls).setUpTestData()
+        cls.admin = UserFactory.create(is_admin=True)
+
+    def setUp(self) -> None:
+        super(TestUserViewSet, self).setUp()
+        self.authenticate(user=self.admin)
 
     def tearDown(self) -> None:
         super(TestUserViewSet, self).tearDown()
@@ -14,6 +23,7 @@ class TestUserViewSet(APITestCase):
 
     def test_should_return_list_of_all_users(self):
         users = UserFactory.create_batch(count=3)
+        users.insert(0, self.admin)
         response = self.client.get(reverse('api:users-list'))
         self.assertEqual(response.status_code, 200)
         actual_response_data = response.json()

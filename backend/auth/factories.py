@@ -12,7 +12,8 @@ class UserFactory(AbstractFactory):
             'email': kwargs.get('email', cls._get_unique_email()),
             'name': kwargs.get('name', 'Jon Snow'),
             'username': kwargs.get('username', cls._get_unique_username()),
-            'weekly_hours': kwargs.get('weekly_hours', float(random.randint(20, 60)))
+            'weekly_hours': kwargs.get('weekly_hours', float(random.randint(20, 60))),
+            'is_admin': kwargs.get('is_admin', False)
         }
 
     @classmethod
