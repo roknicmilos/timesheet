@@ -15,9 +15,3 @@ class HasAccessToUserResources(BasePermission):
                 return int(view.kwargs.get(key))
         else:
             raise KeyError('Unable to find user ID in view kwargs')
-
-
-class IsAdmin(BasePermission):
-
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_admin
