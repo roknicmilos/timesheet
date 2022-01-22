@@ -1,0 +1,3 @@
+from projects.serializers.client_serializer import ClientSerializer
+from projects.serializers.category_serializer import CategorySerializer
+from projects.serializers.project_serializer import ProjectSerializer

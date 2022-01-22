@@ -1,14 +1,9 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import serializers, viewsets
+from rest_framework import viewsets
 from main.utils import paginate_queryset
 from projects.models import Category
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
+from projects.serializers import CategorySerializer
 
 
 class CategoryViewSet(viewsets.ViewSet):
