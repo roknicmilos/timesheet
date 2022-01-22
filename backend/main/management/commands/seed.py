@@ -1,4 +1,5 @@
 import os
+from types import ModuleType
 from typing import List, Tuple, Type
 from importlib import import_module
 from django.apps import apps
@@ -30,20 +31,44 @@ class Command(BaseCommand):
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
+        self.app_labels: List[str] = []
         self.seeded_models: List[Type[Model]] = []
+        self.is_verbose: bool = False
+        self.seeds_results: str = 'Seed results:\n'
+        self.cleanup_results: str = f'Results of fixing id column sequence for all seeded tables:\n'
 
     def add_arguments(self, parser):
         parser.add_argument('apps', nargs='+', help='Django app name(s) or "all" for all apps')
+        parser.add_argument('--verbose', action='store_true', help='Print detailed logs')
 
     def handle(self, *args, **options):
-        app_names = options.get('apps')
-        app_configs = self._get_app_configs(app_names)
+        self.is_verbose = options.get('verbose')
+        self.app_labels = options.get('apps')
+        self._seed()
+        self._cleanup()
+        self._print_results()
 
-        self._seed(app_configs=app_configs)
-        self._post_seed()
+    def _get_app_configs(self) -> list:
+        if 'all' in self.app_labels:
+            if seeds_order := getattr(settings, 'SEEDS_ORDER', None):
+                return self._get_ordered_app_configs(app_labels=seeds_order)
+            return apps.get_app_configs()
+        return [apps.get_app_config(app_label=app_label) for app_label in self.app_labels]
 
+    @staticmethod
+    def _get_ordered_app_configs(app_labels: Tuple[str]) -> list:
+        app_configs = [apps.get_app_config(app_label) for app_label in app_labels]
+        for app_config in apps.get_app_configs():
+            if app_config not in app_configs:
+                app_configs.append(app_config)
+        return app_configs
 
-    def _seed(self, app_configs: list) -> None:
+    def _seed(self) -> None:
+        if not self.is_verbose:
+            joined_app_labels = ', '.join(f"{app_label}" for app_label in self.app_labels)
+            self.stdout.write(f'Seeding objects for {joined_app_labels} apps ...')
+
+        app_configs = self._get_app_configs()
         for app_config in app_configs:
             seeds_path = os.path.join(app_config.path, 'seeds')
             if not os.path.isdir(seeds_path):
@@ -63,63 +88,67 @@ class Command(BaseCommand):
                     self.stdout.write(error_message)
                     continue
 
-                self._seed_items(seed_items=seed_items)
-                self._post_seed_items(module=module)
+                self._seed_module_items(module=module, seed_items=seed_items)
+                self._post_seed_module_items(module=module)
 
-    @classmethod
-    def _get_app_configs(cls, apps_options) -> list:
-        if 'all' in apps_options:
-            if seeds_order := getattr(settings, 'SEEDS_ORDER', None):
-                return cls._get_ordered_app_configs(app_names=seeds_order)
-            return apps.get_app_configs()
-        return [apps.get_app_config(app_name) for app_name in apps_options]
-
-    @staticmethod
-    def _get_ordered_app_configs(app_names: Tuple[str]) -> list:
-        app_configs = [apps.get_app_config(app_name) for app_name in app_names]
-        for app_config in apps.get_app_configs():
-            if app_config not in app_configs:
-                app_configs.append(app_config)
-        return app_configs
-
-    def _seed_items(self, seed_items: List[Model]) -> None:
+    def _seed_module_items(self, module: ModuleType, seed_items: List[Model]) -> None:
+        seeded_objects_count = 0
         for seed in seed_items:
             if not hasattr(seed, 'pk'):
-                self.stdout.write(self.style.ERROR(f'{seed} does not have an attribute "pk".'))
+                if self.is_verbose:
+                    self.stdout.write(self.style.ERROR(f'{seed} does not have an attribute "pk".'))
                 continue
 
             model_name = seed.__class__.__name__
             if seed.__class__.objects.filter(pk=seed.pk).exists():
-                warning_message = self.style.WARNING(
-                    f'{model_name} with ID {seed.pk} already exists. Seed is skipped.'
-                )
-                self.stdout.write(warning_message)
+                if self.is_verbose:
+                    warning_message = self.style.WARNING(
+                        f'{model_name} with ID {seed.pk} already exists. Seed is skipped.'
+                    )
+                    self.stdout.write(warning_message)
                 continue
 
             try:
                 seed.save()
             except Exception as exception:
-                error_message = f'Failed to seed the item of type {seed.__class__.__name__} ' \
-                                f'with PK {seed.pk}:\n{exception}'
-                self.stdout.write(self.style.ERROR(error_message))
+                if self.is_verbose:
+                    error_message = f'Failed to seed the item of type {seed.__class__.__name__} ' \
+                                    f'with PK {seed.pk}:\n{exception}'
+                    self.stdout.write(self.style.ERROR(error_message))
             else:
+                seeded_objects_count += 1
                 if seed.__class__ not in self.seeded_models:
                     self.seeded_models.append(seed.__class__)
-                self.stdout.write(self.style.SUCCESS(f'{model_name} {seed.pk} created.'))
+                if self.is_verbose:
+                    self.stdout.write(self.style.SUCCESS(f'{model_name} {seed.pk} created.'))
 
-    def _post_seed_items(self, module) -> None:
+        self.seeds_results += f' > {module.__name__}: {seeded_objects_count}/{len(seed_items)} seeded objects, '
+
+    def _post_seed_module_items(self, module: ModuleType) -> None:
         post_seed = getattr(module, 'post_seed', None)
         if callable(post_seed):
             try:
                 post_seed()
             except Exception as exception:
-                error_message = f'Failed to execute "post_seed" callable from {module.__name__}:\n{exception}'
-                self.stdout.write(self.style.ERROR(error_message))
+                if self.is_verbose:
+                    error_message = f'Failed to execute "post_seed" callable from {module.__name__}:\n{exception}'
+                    self.stdout.write(self.style.ERROR(error_message))
+                self.seeds_results += f'"post_seed" failed\n'
             else:
-                message = f'Successfully executed "post_seed" callable from {module.__name__}'
-                self.stdout.write(self.style.SUCCESS(message))
+                if self.is_verbose:
+                    message = f'Successfully executed "post_seed" callable from {module.__name__}'
+                    self.stdout.write(self.style.SUCCESS(message))
+                self.seeds_results += f'"post_seed" successful\n'
+        else:
+            self.seeds_results += f'"post_seed" not found\n'
 
-    def _post_seed(self):
+    def _cleanup(self):
+        if len(self.seeded_models):
+            self._fix_seeded_models_db_table_id_sequences()
+        else:
+            self.cleanup_results += f' > There were no seeds applied\n'
+
+    def _fix_seeded_models_db_table_id_sequences(self) -> None:
         """
         Sets id column sequence to the correct value for all seeded tables.
         Saving a new model instance that has PK field set to certain value
@@ -127,23 +156,40 @@ class Command(BaseCommand):
         necessary to set it to the correct value afterwards.
         """
 
+        if not self.is_verbose:
+            self.stdout.write(f'Fixing id column sequence for all seeded tables ({len(self.seeded_models)}) ...')
+
+        successful_sequence_fix_attempts = 0
+        skipped_sequence_fix_attempts = 0
+        failed_sequence_fix_attempts = 0
         for model_class in self.seeded_models:
             table_name = model_class._meta.db_table
             try:
                 has_applied_fix = self._fix_db_table_id_sequence_if_incorrect(table_name=model_class._meta.db_table)
             except Exception as exception:
-                error_message = f'Failed to execute the function for fixing the id (primary key) sequence ' \
-                                f'for table "{table_name}" (model {model_class.__name__}):\n{exception}'
-                self.stdout.write(self.style.ERROR(error_message))
+                failed_sequence_fix_attempts += 1
+                if self.is_verbose:
+                    error_message = f'Failed to execute the function for fixing the id (primary key) sequence ' \
+                                    f'for table "{table_name}" (model {model_class.__name__}):\n{exception}'
+                    self.stdout.write(self.style.ERROR(error_message))
             else:
                 if has_applied_fix:
-                    message = f'Fixed id (primary key) sequence for table {table_name} (model {Model})'
-                    self.stdout.write(self.style.SUCCESS(message))
+                    successful_sequence_fix_attempts += 1
+                    if self.is_verbose:
+                        message = f'Fixed id (primary key) sequence for table {table_name} (model {Model})'
+                        self.stdout.write(self.style.SUCCESS(message))
                 else:
-                    message = f'Did not fix id (primary key) sequence for table {table_name} ' \
-                              f'(model {Model}) because the sequence is correct'
-                    self.stdout.write(message)
+                    skipped_sequence_fix_attempts += 1
+                    if self.is_verbose:
+                        message = f'Did not fix id (primary key) sequence for table {table_name} ' \
+                                  f'(model {Model}) because the sequence is correct'
+                        self.stdout.write(message)
 
+        self.cleanup_results += (
+            f' > successful: {successful_sequence_fix_attempts}\n'
+            f' > skipped: {skipped_sequence_fix_attempts}\n'
+            f' > failed: {failed_sequence_fix_attempts}\n'
+        )
 
     @staticmethod
     def _fix_db_table_id_sequence_if_incorrect(table_name: str) -> bool:
@@ -168,3 +214,15 @@ class Command(BaseCommand):
                 return True
 
             return False
+
+    def _print_results(self) -> None:
+        self._print_separator()
+        self.stdout.write(self.seeds_results)
+        self.stdout.write(self.cleanup_results)
+        self._print_separator()
+
+    def _print_separator(self, char_count: int = 100) -> None:
+        separator = ''
+        for _ in range(char_count):
+            separator += '-'
+        self.stdout.write(separator)
