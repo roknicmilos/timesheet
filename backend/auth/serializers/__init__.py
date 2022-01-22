@@ -1,0 +1,3 @@
+from auth.serializers.login_serializer import LoginSerializer
+from auth.serializers.password_serializer import PasswordSerializer
+from auth.serializers.user_serializer import UserSerializer
