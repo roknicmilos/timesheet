@@ -1,35 +1,13 @@
 from django.db.models import Q
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import serializers, viewsets
+from rest_framework import viewsets
 from auth.authentication import TokenAuthentication
 from auth.permissions import HasAccessToUserResources
 from main.utils import paginate_queryset
 from timesheet.models import DailyTimeSheet, TimeSheetReport
-
-
-class TimeSheetReportSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TimeSheetReport
-        fields = '__all__'
-
-
-class DailyTimeSheetSerializer(serializers.ModelSerializer):
-    time_sheet_reports = TimeSheetReportSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = DailyTimeSheet
-        fields = '__all__'
-
-    def validate(self, attrs):
-        attrs = super(DailyTimeSheetSerializer, self).validate(attrs)
-
-        if DailyTimeSheet.objects.filter(date=attrs.get('date'), employee=attrs.get('employee')).exists():
-            raise ValidationError('Daily time sheet with this user and date already exists')
-
-        return attrs
+from timesheet.serializers import DailyTimeSheetSerializer
 
 
 class DailyTimeSheetViewSet(viewsets.ViewSet):
@@ -66,7 +44,7 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None, **kwargs):
         daily_time_sheet = get_object_or_404(DailyTimeSheet, pk=pk, employee=self.request.user)
         data = self._prepare_time_sheet_reports_data(request=request, daily_time_sheet_id=pk)
-        time_sheet_report_serializer = TimeSheetReportSerializer(data=data, many=True)
+        time_sheet_report_serializer = DailyTimeSheetSerializer.TimeSheetReportSerializer(data=data, many=True)
         if time_sheet_report_serializer.is_valid():
             daily_time_sheet.time_sheet_reports.all().delete()
             TimeSheetReport.objects.create_batch(*time_sheet_report_serializer.validated_data)

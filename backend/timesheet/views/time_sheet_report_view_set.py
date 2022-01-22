@@ -1,18 +1,9 @@
 from django.db.models import Q
 from rest_framework.response import Response
-from rest_framework import serializers, viewsets
+from rest_framework import viewsets
 from main.utils import paginate_queryset, get_bool_url_param_value
 from timesheet.models import TimeSheetReport
-
-
-class TimeSheetReportSerializer(serializers.ModelSerializer):
-    employee = serializers.PrimaryKeyRelatedField(read_only=True)
-    client = serializers.PrimaryKeyRelatedField(read_only=True)
-    date = serializers.DateField(read_only=True)
-
-    class Meta:
-        model = TimeSheetReport
-        fields = '__all__'
+from timesheet.serializers import TimeSheetReportSerializer
 
 
 class TimeSheetReportViewSet(viewsets.ViewSet):

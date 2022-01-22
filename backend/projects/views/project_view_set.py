@@ -1,6 +1,6 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import  viewsets
 from main.utils import paginate_queryset
 from projects.models import Project
 from projects.serializers import ProjectSerializer
