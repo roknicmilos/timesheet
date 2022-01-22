@@ -1,12 +1,17 @@
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets
+from auth.authentication import TokenAuthentication
+from auth.permissions import IsAdmin
 from main.utils import paginate_queryset
 from projects.models import Client
 from projects.serializers import ClientSerializer
 
 
 class ClientViewSet(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def list(self, request, **kwargs):
         clients = paginate_queryset(queryset=Client.objects.all(), request=request)

@@ -1,18 +1,22 @@
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets
+from auth.authentication import TokenAuthentication
+from auth.permissions import IsAdmin
 from main.utils import paginate_queryset
 from projects.models import Category
 from projects.serializers import CategorySerializer
 
 
 class CategoryViewSet(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def list(self, request, **kwargs):
         categories = paginate_queryset(queryset=Category.objects.all(), request=request)
         serializer = CategorySerializer(categories, many=True)
         return Response(data=serializer.data)
-
 
     def create(self, request, **kwargs):
         serializer = CategorySerializer(data=request.data)
