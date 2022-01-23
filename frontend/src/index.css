@@ -414,7 +414,7 @@ li {
 }
 
 .icon__search {
-    background-image : url("./assets/images/search.png");
+    /* background-image : url("./assets/images/search.png"); */
     background-repeat: no-repeat;
     width            : 33px;
     height           : 33px;
@@ -452,17 +452,17 @@ li {
     }
 
     .table-navigation__prev:after {
-        content          : " ";
-        background-image : url("./assets/images/ico-arrow-new.svg");
-        display          : inline-block;
-        height           : 17px;
-        background-repeat: no-repeat;
-        visibility       : visible;
-        transform        : rotate(180deg);
-        width            : 17px;
-        position         : absolute;
-        left             : 13px;
-        top              : 27%;
+        content             : " ";
+        /* background-image : url("./assets/images/ico-arrow-new.svg"); */
+        display             : inline-block;
+        height              : 17px;
+        background-repeat   : no-repeat;
+        visibility          : visible;
+        transform           : rotate(180deg);
+        width               : 17px;
+        position            : absolute;
+        left                : 13px;
+        top                 : 27%;
     }
 
     .table-navigation__next {
@@ -470,16 +470,16 @@ li {
     }
 
     .table-navigation__next:after {
-        content          : " ";
-        background-image : url("./assets/images/ico-arrow-new.svg");
-        display          : inline-block;
-        height           : 17px;
-        background-repeat: no-repeat;
-        visibility       : visible;
-        width            : 17px;
-        position         : absolute;
-        right            : 13px;
-        top              : 27%;
+        content             : " ";
+        /* background-image : url("./assets/images/ico-arrow-new.svg"); */
+        display             : inline-block;
+        height              : 17px;
+        background-repeat   : no-repeat;
+        visibility          : visible;
+        width               : 17px;
+        position            : absolute;
+        right               : 13px;
+        top                 : 27%;
     }
 }
 
