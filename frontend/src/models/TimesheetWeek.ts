@@ -1,6 +1,6 @@
-import TimeheetDay from "./TimesheetDay";
+import TimesheetDay from "./TimesheetDay";
 
-export default interface TimeheetWeek {
+export default interface TimesheetWeek {
     order: number;
-    days: TimeheetDay[];
+    days: TimesheetDay[];
 }
