@@ -1,62 +1,16 @@
 import { useEffect, useState } from "react"
 import CalendarWeek from "./CalendarWeek"
-import TimesheetDay from "../../models/TimesheetDay"
+import TimesheetWeek from "../../models/TimesheetWeek"
+import { getCalendarWeeks } from "../../services/calendar.service"
 
-const getCalendarWeeks = function (month: number, year: number): Array<Array<TimesheetDay>> {
-    const firstCalendarDay = getFirstCalendarDay(month, year)
-    const lastCalendarDay = getLastCalendarDay(month, year)
-    const calendarWeeks = []
-    let weekDays = []
-    const currentDate = firstCalendarDay
-    while (currentDate <= lastCalendarDay) {
-        if (currentDate.getDay() === 1 && weekDays.length) {
-            weekDays = []
-        }
-        const isDisabled = month === currentDate.getMonth() ? false : true
-        const timesheetDay = { date: new Date(currentDate), isDisabled, hours: 7.5 } as TimesheetDay
-        console.log(timesheetDay)
-        weekDays.push(timesheetDay)
-        currentDate.setDate(currentDate.getDate() + 1)
-        if (currentDate.getDay() === 0) {
-            calendarWeeks.push(weekDays)
-        }
-    }
-    return calendarWeeks
-
-}
-
-const getFirstCalendarDay = function (month: number, year: number): Date {
-    const firstDayOfTheMonth = new Date(year, month, 1)
-    if (firstDayOfTheMonth.getDay() === 1) return firstDayOfTheMonth
-    return getMonday(firstDayOfTheMonth)
-}
-
-const getLastCalendarDay = function (month: number, year: number): Date {
-    const monthDayCount = new Date(year, month + 1, 0).getDate()
-    const lastDayOfTheMonth = new Date(year, month, monthDayCount)
-    if (lastDayOfTheMonth.getDay() === 0) return lastDayOfTheMonth
-    return getSunday(lastDayOfTheMonth)
-}
-
-function getMonday(date: Date): Date {
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(date.setDate(diff));
-}
-
-function getSunday(date: Date): Date {
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? 0 : 7);
-    return new Date(date.setDate(diff));
-}
 
 export default function TimesheetPage() {
-    const [calendarWeeks, setCalendarWeeks] = useState<Array<Array<TimesheetDay>>>([])
+    const [timesheetWeeks, setTimesheetWeek] = useState<TimesheetWeek[]>([])
 
     useEffect(() => {
         const now = new Date()
         const weeks = getCalendarWeeks(now.getMonth(), now.getFullYear())
-        setCalendarWeeks(weeks)
+        setTimesheetWeek(weeks)
     }, [])
 
     return (
@@ -81,7 +35,7 @@ export default function TimesheetPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {calendarWeeks.map(weekDays => <CalendarWeek timesheetDays={weekDays} />)}
+                        {timesheetWeeks.map(timesheetWeek => <CalendarWeek key={timesheetWeek.order} timesheetWeek={timesheetWeek} />)}
                     </tbody>
                 </table>
             </div>

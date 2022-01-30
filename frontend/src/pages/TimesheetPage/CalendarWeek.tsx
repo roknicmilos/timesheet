@@ -1,10 +1,10 @@
 import CalendarDay from "./CalendarDay"
-import TimesheetDay from "../../models/TimesheetDay"
+import TimesheetWeek from "../../models/TimesheetWeek"
 
 interface CalendarWeekProps {
-    timesheetDays: TimesheetDay[]
+    timesheetWeek: TimesheetWeek
 }
 
-export default function CalendarWeek({ timesheetDays }: CalendarWeekProps) {
-    return <tr>{timesheetDays.map(timesheetDay => <CalendarDay timesheetDay={timesheetDay} />)}</tr>
+export default function CalendarWeek({ timesheetWeek }: CalendarWeekProps) {
+    return <tr>{timesheetWeek.days.map(timesheetDay => <CalendarDay key={timesheetDay.date.toString()} timesheetDay={timesheetDay} />)}</tr>
 }

@@ -1,4 +1,4 @@
-import whiteLogo from './assets/images/logo/logo-white.png'
+import whiteLogo from './../assets/images/logo/logo-white.png'
 
 export default function Header() {
     return (
