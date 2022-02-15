@@ -1,4 +1,4 @@
-import TimesheetDay from "../../models/TimesheetDay"
+import TimesheetDay from "../../core/models/TimesheetDay"
 
 interface CalendarDayProps {
     timesheetDay: TimesheetDay;
@@ -15,7 +15,7 @@ export default function CalendarDay({ timesheetDay }: CalendarDayProps) {
                 <i></i>
             </div>
             <div className="month-table__hours">
-                <a href="./days.html" className="month-table__day">
+                <a href="/" className="month-table__day">
                     <span>Hours: </span><span>{timesheetDay.hours}</span>
                 </a>
             </div>

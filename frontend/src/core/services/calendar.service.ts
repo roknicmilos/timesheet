@@ -1,15 +1,15 @@
-import TimesheetWeek from './../models/TimesheetWeek'
-import TimesheetMonth from './../models/TimesheetMonth'
+import TimesheetWeek from '../models/TimesheetWeek'
+import TimesheetMonth from '../models/TimesheetMonth'
 
 function createTimesheetMonth(month: number, year: number): TimesheetMonth {
     const firstDayOfTheMonth = new Date(year, month, 1)
     let timesheetMonth: TimesheetMonth
     timesheetMonth = {
-        month: month, 
-        year:year, 
-        label: firstDayOfTheMonth.toLocaleString('default', {month: 'long'}),
+        month: month,
+        year: year,
+        label: firstDayOfTheMonth.toLocaleString('default', { month: 'long' }),
         weeks: createTimesheetWeeks(month, year),
-        calculateTotalHours: function (){
+        calculateTotalHours: function () {
             let totalHours = 0
             this.weeks.forEach(week => {
                 week.days.forEach(day => {
@@ -26,18 +26,18 @@ function createTimesheetMonth(month: number, year: number): TimesheetMonth {
 
 function createTimesheetWeeks(month: number, year: number): Array<TimesheetWeek> {
     const calendarWeeks = []
-    
+
     const firstCalendarDay = getFirstCalendarDay(month, year)
     const lastCalendarDay = getLastCalendarDay(month, year)
-    
-    let timesheetWeek = {order: 1, days: []} as TimesheetWeek
+
+    let timesheetWeek = { order: 1, days: [] } as TimesheetWeek
     const currentDate = firstCalendarDay
     while (currentDate <= lastCalendarDay) {
-        if (currentDate.getDay() === 1 && timesheetWeek.order) {
-            timesheetWeek = {order: timesheetWeek.order + 1, days: []} as TimesheetWeek
+        if (currentDate.getDay() === 1) {
+            timesheetWeek = { order: timesheetWeek.order + 1, days: [] } as TimesheetWeek
         }
         const isDisabled = month === currentDate.getMonth() ? false : true
-        timesheetWeek.days.push({date: new Date(currentDate), isDisabled, hours: 1 })
+        timesheetWeek.days.push({ date: new Date(currentDate), isDisabled, hours: 1 })
         currentDate.setDate(currentDate.getDate() + 1)
         if (currentDate.getDay() === 0) {
             calendarWeeks.push(timesheetWeek)

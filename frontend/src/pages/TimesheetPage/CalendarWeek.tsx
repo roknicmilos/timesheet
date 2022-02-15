@@ -1,5 +1,5 @@
 import CalendarDay from "./CalendarDay"
-import TimesheetWeek from "../../models/TimesheetWeek"
+import TimesheetWeek from "../../core/models/TimesheetWeek"
 
 interface CalendarWeekProps {
     timesheetWeek: TimesheetWeek

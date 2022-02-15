@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import CalendarWeek from "./CalendarWeek"
-import TimesheetMonth from "../../models/TimesheetMonth"
-import { createTimesheetMonth } from "../../services/calendar.service"
+import TimesheetMonth from "../../core/models/TimesheetMonth"
+import { createTimesheetMonth } from "./../../core/services/calendar.service"
 
 
 export default function TimesheetPage() {
@@ -14,7 +14,7 @@ export default function TimesheetPage() {
         }
     }, [timesheetMonth, setTimesheetWeek])
 
-    const PageContent = function() {
+    const PageContent = function () {
         return (
             <section className="main-content">
                 <h2 className="main-content__title">Timesheet</h2>
