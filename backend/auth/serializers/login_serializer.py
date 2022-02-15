@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 from auth.models import User
 from main.serializers import SimpleSerializer
 
@@ -18,5 +19,10 @@ class LoginSerializer(SimpleSerializer):
 
         return attrs
 
-    def get_user(self) -> User:
-        return self.user
+    @property
+    def validated_data(self):
+        from auth.serializers import UserSerializer
+        data = UserSerializer(self.user).data
+        token, _ = Token.objects.get_or_create(user=self.user)
+        data['token'] = token.key
+        return data

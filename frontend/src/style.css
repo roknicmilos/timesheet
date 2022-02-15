@@ -858,6 +858,14 @@ input[type=number] {
     padding-left   : 30px;
 }
 
+.info__list.error .info__label {
+    color: red;
+}
+
+.info__list.error .in-text {
+    border-color: red;
+}
+
 .radio-label {
     color: #000;
 }
