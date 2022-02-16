@@ -1,17 +1,23 @@
 import TimesheetWeek from '../models/TimesheetWeek'
 import TimesheetMonth from '../models/TimesheetMonth'
+import { getDailyTimeSheets } from '../api/dailyTimeSheet.api'
+import DailyTimeSheet from '../models/api/DailyTimeSheet'
+import TimesheetDay from '../models/TimesheetDay'
+import TimeSheetReport from '../models/api/TimeSheetReport'
 
-function createTimesheetMonth(month: number, year: number): TimesheetMonth {
+export async function getTimesheetMonth(userId: number, month: number, year: number): Promise<TimesheetMonth> {
     const firstDayOfTheMonth = new Date(year, month, 1)
-    let timesheetMonth: TimesheetMonth
-    timesheetMonth = {
+
+    const timeSheetWeeks = await createTimesheetWeeks(userId, month, year)
+
+    const timesheetMonth: TimesheetMonth = {
         month: month,
         year: year,
         label: firstDayOfTheMonth.toLocaleString('default', { month: 'long' }),
-        weeks: createTimesheetWeeks(month, year),
+        weeks: timeSheetWeeks,
         calculateTotalHours: function () {
             let totalHours = 0
-            this.weeks.forEach(week => {
+            this.weeks?.forEach(week => {
                 week.days.forEach(day => {
                     if (!day.isDisabled) {
                         totalHours += day.hours
@@ -21,30 +27,55 @@ function createTimesheetMonth(month: number, year: number): TimesheetMonth {
             return totalHours
         }
     }
+
     return timesheetMonth
 }
 
-function createTimesheetWeeks(month: number, year: number): Array<TimesheetWeek> {
-    const calendarWeeks = []
-
+async function createTimesheetWeeks(userId: number, month: number, year: number): Promise<Array<TimesheetWeek>> {
     const firstCalendarDay = getFirstCalendarDay(month, year)
     const lastCalendarDay = getLastCalendarDay(month, year)
 
-    let timesheetWeek = { order: 1, days: [] } as TimesheetWeek
-    const currentDate = firstCalendarDay
-    while (currentDate <= lastCalendarDay) {
-        if (currentDate.getDay() === 1) {
-            timesheetWeek = { order: timesheetWeek.order + 1, days: [] } as TimesheetWeek
+    const dailyTimeSheets = await getDailyTimeSheets(userId, firstCalendarDay, lastCalendarDay)
+    if (!dailyTimeSheets) return []
+
+    const dailyTimeSheetChunks = splitArray(dailyTimeSheets, 7)
+    return dailyTimeSheetChunks.map((dailyTimeSheets, index) => {
+        return {
+            order: index + 1,
+            days: createTimesheetDays(dailyTimeSheets, month)
         }
-        const isDisabled = month === currentDate.getMonth() ? false : true
-        timesheetWeek.days.push({ date: new Date(currentDate), isDisabled, hours: 1 })
-        currentDate.setDate(currentDate.getDate() + 1)
-        if (currentDate.getDay() === 0) {
-            calendarWeeks.push(timesheetWeek)
+    })
+}
+
+function createTimesheetDays(dailyTimeSheets: DailyTimeSheet[], targetMonth: number): TimesheetDay[] {
+    return dailyTimeSheets.map(dailyTimeSheet => {
+        const dailyTimeSheetDate = new Date(dailyTimeSheet.date)
+        const timesheetDay: TimesheetDay = {
+            date: dailyTimeSheetDate,
+            isDisabled: targetMonth === dailyTimeSheetDate.getMonth() ? false : true,
+            hours: calculateTotalHours(dailyTimeSheet.time_sheet_reports)
         }
+        return timesheetDay
+    })
+}
+
+function calculateTotalHours(timesheetReports: TimeSheetReport[]): number {
+    let totalHours = 0
+    timesheetReports.forEach(timesheetReport => {
+        totalHours += (timesheetReport.hours + timesheetReport.overtime_hours)
+    })
+    return totalHours
+}
+
+function splitArray(array: DailyTimeSheet[], size: number): [][] {
+    const arrayCopy = array.splice(0)
+    const arrayChunks = [] as any
+
+    while (arrayCopy.length) {
+        arrayChunks.push(arrayCopy.splice(0, size))
     }
 
-    return calendarWeeks
+    return arrayChunks
 }
 
 function getFirstCalendarDay(month: number, year: number): Date {
@@ -71,5 +102,3 @@ function getSunday(date: Date): Date {
     const diff = date.getDate() - day + (day === 0 ? 0 : 7);
     return new Date(date.setDate(diff));
 }
-
-export { createTimesheetMonth }

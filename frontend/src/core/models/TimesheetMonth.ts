@@ -4,6 +4,6 @@ export default interface TimesheetMonth {
     month: number;
     year: number;
     label: string;
-    weeks: TimesheetWeek[];
+    weeks?: TimesheetWeek[];
     calculateTotalHours(): number;
 }

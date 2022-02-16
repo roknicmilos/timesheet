@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react"
 import CalendarWeek from "./CalendarWeek"
 import TimesheetMonth from "../../../core/models/TimesheetMonth"
-import { createTimesheetMonth } from "./../../../core/services/calendar.service"
+import { getTimesheetMonth } from "./../../../core/services/calendar.service"
+import { useAuth } from "../../../core/contexts/Auth.context"
 
 
 export default function TimesheetPage() {
     const [timesheetMonth, setTimesheetWeek] = useState<TimesheetMonth>()
+    const { user } = useAuth()
 
     useEffect(() => {
-        if (!timesheetMonth) {
+        if (!timesheetMonth && user) {
             const now = new Date()
-            setTimesheetWeek(createTimesheetMonth(now.getMonth(), now.getFullYear()))
+            getTimesheetMonth(user.id, now.getMonth(), now.getFullYear()).then(timesheetMonth => setTimesheetWeek(timesheetMonth))
         }
-    }, [timesheetMonth, setTimesheetWeek])
+    }, [user, timesheetMonth, setTimesheetWeek])
 
     const PageContent = function () {
         return (
@@ -37,7 +39,7 @@ export default function TimesheetPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {timesheetMonth?.weeks.map(timesheetWeek => <CalendarWeek key={timesheetWeek.order} timesheetWeek={timesheetWeek} />)}
+                            {timesheetMonth?.weeks?.map(timesheetWeek => <CalendarWeek key={timesheetWeek.order} timesheetWeek={timesheetWeek} />)}
                         </tbody>
                     </table>
                 </div>
