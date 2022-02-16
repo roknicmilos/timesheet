@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import CalendarWeek from "./CalendarWeek"
-import TimesheetMonth from "../../core/models/TimesheetMonth"
-import { createTimesheetMonth } from "./../../core/services/calendar.service"
+import TimesheetMonth from "../../../core/models/TimesheetMonth"
+import { createTimesheetMonth } from "./../../../core/services/calendar.service"
 
 
 export default function TimesheetPage() {

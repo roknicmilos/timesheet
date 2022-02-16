@@ -1,9 +1,9 @@
-import { logout } from "../../core/api/auth.api";
-import { useAuth } from "../../core/contexts/Auth.context";
+import { logout } from "../../../core/api/auth.api";
+import { useAuth } from "../../../core/contexts/Auth.context";
 
 export default function Navigation() {
 
-    const { clearUser } = useAuth()
+    const { user, clearUser } = useAuth()
 
     const handleLogout = function () {
         logout()
@@ -38,7 +38,7 @@ export default function Navigation() {
             </nav>
             <div className="user">
                 <div className="user__nav">
-                    <h2 className="user__name">Ognjen Adamović</h2>
+                    <h2 className="user__name">{user?.name}</h2>
                     <ul className="user__dropdown">
                         <li className="user__list"><a className="user__link" href="/">Change password</a></li>
                         <li className="user__list"><a className="user__link" href="/">Settings</a></li>

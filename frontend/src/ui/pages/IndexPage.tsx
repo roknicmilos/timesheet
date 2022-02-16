@@ -1,4 +1,4 @@
-import { useAuth } from "../core/contexts/Auth.context"
+import { useAuth } from "../../core/contexts/Auth.context"
 import LoginPage from "./LoginPage"
 import TimesheetPage from "./TimesheetPage"
 

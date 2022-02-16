@@ -1,5 +1,5 @@
-import { useAuth } from '../../core/contexts/Auth.context'
-import whiteLogo from './../../assets/images/logo/logo-white.png'
+import { useAuth } from '../../../core/contexts/Auth.context'
+import whiteLogo from './../../../assets/images/logo/logo-white.png'
 import Navigation from './Navigation'
 
 

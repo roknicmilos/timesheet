@@ -1,4 +1,4 @@
-import TimesheetDay from "../../core/models/TimesheetDay"
+import TimesheetDay from "../../../core/models/TimesheetDay"
 
 interface CalendarDayProps {
     timesheetDay: TimesheetDay;

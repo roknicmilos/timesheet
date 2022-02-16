@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthContextProvider } from "../core/contexts/Auth.context";
-import IndexPage from "../pages/IndexPage";
-import Footer from "./Footer";
-import Header from "./Header";
+import IndexPage from "./pages/IndexPage";
+import Footer from "./layout/Footer";
+import Header from "./layout/Header";
 
 export default function App() {
     return (
