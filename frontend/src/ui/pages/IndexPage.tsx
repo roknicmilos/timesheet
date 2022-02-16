@@ -6,9 +6,5 @@ export default function IndexPage() {
 
     const { user } = useAuth()
 
-    return (
-        <div className="wrapper">
-            {user ? <TimesheetPage /> : <LoginPage />}
-        </div>
-    )
+    return user ? <TimesheetPage /> : <LoginPage />
 }

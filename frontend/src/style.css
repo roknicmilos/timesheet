@@ -394,6 +394,7 @@ li {
     justify-content: flex-start;
     align-items    : center;
     text-decoration: none;
+    cursor         : pointer;
 }
 
 .table-navigation__create {
@@ -436,6 +437,7 @@ li {
     justify-content: flex-start;
     align-items    : center;
     text-decoration: none;
+    cursor         : pointer;
 }
 
 .table-navigation__text {

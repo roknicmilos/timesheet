@@ -10,9 +10,11 @@ export default function App() {
             <BrowserRouter>
                 <div className="container">
                     <Header />
-                    <Routes>
-                        <Route path='/' element={<IndexPage />} />
-                    </Routes>
+                    <div className="wrapper">
+                        <Routes>
+                            <Route path='/' element={<IndexPage />} />
+                        </Routes>
+                    </div>
                 </div>
                 <Footer />
             </BrowserRouter>

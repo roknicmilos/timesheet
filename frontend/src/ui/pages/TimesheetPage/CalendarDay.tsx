@@ -2,11 +2,12 @@ import TimesheetDay from "../../../core/models/TimesheetDay"
 
 interface CalendarDayProps {
     timesheetDay: TimesheetDay;
+    isDisabled: boolean;
 }
 
-export default function CalendarDay({ timesheetDay }: CalendarDayProps) {
+export default function CalendarDay({ timesheetDay, isDisabled }: CalendarDayProps) {
     let wrapperElementClasses = ['month-table__regular']
-    if (timesheetDay.isDisabled) wrapperElementClasses.push('month-table__regular--disabled')
+    if (isDisabled) wrapperElementClasses.push('month-table__regular--disabled')
 
     return (
         <td className={wrapperElementClasses.join(' ')}>
