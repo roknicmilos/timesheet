@@ -1,4 +1,4 @@
-export default interface TimeSheetReport {
+export default interface TimesheetReport {
     id: number;
     created: Date;
     modified: Date;

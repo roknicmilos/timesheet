@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { login } from "../../core/api/auth.api";
+import { login } from "../../core/services/auth.service";
 
 export default function LoginPage() {
 

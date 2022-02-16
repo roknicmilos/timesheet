@@ -1,7 +1,7 @@
-import timesheetApiClient from ".";
-import DailyTimeSheet from "../models/api/DailyTimeSheet"
+import DailyTimesheet from "../models/api/DailyTimesheet"
+import timesheetApiClient from "../timesheet.api";
 
-export async function getDailyTimeSheets(userId: number, from: Date, until: Date): Promise<DailyTimeSheet[] | undefined> {
+export async function getDailyTimesheets(userId: number, from: Date, until: Date): Promise<DailyTimesheet[] | undefined> {
     let url = `/users/${userId}/daily-time-sheets/?from=${getDateIsoFormat(from)}&until=${getDateIsoFormat(until)}`
     try {
         const response = await timesheetApiClient.get(url);

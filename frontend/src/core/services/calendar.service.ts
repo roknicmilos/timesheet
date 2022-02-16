@@ -1,23 +1,23 @@
 import TimesheetWeek from '../models/TimesheetWeek'
 import TimesheetMonth from '../models/TimesheetMonth'
-import { getDailyTimeSheets } from '../api/dailyTimeSheet.api'
-import DailyTimeSheet from '../models/api/DailyTimeSheet'
+import DailyTimesheet from '../models/api/DailyTimesheet'
 import TimesheetDay from '../models/TimesheetDay'
-import TimeSheetReport from '../models/api/TimeSheetReport'
+import TimesheetReport from '../models/api/TimesheetReport'
+import { getDailyTimesheets } from './dailyTimesheet.service'
 
 export async function getTimesheetMonth(userId: number, month: number, year: number): Promise<TimesheetMonth> {
     const firstDayOfTheMonth = new Date(year, month, 1)
 
-    const timeSheetWeeks = await createTimesheetWeeks(userId, month, year)
+    const timesheetWeeks = await createTimesheetWeeks(userId, month, year)
 
-    const timesheetMonth: TimesheetMonth = {
+    return {
         month: month,
         year: year,
         label: firstDayOfTheMonth.toLocaleString('default', { month: 'long' }),
-        weeks: timeSheetWeeks,
+        weeks: timesheetWeeks,
         calculateTotalHours: function () {
             let totalHours = 0
-            this.weeks?.forEach(week => {
+            timesheetWeeks?.forEach(week => {
                 week.days.forEach(day => {
                     if (!day.isDisabled) {
                         totalHours += day.hours
@@ -27,39 +27,37 @@ export async function getTimesheetMonth(userId: number, month: number, year: num
             return totalHours
         }
     }
-
-    return timesheetMonth
 }
 
 async function createTimesheetWeeks(userId: number, month: number, year: number): Promise<Array<TimesheetWeek>> {
     const firstCalendarDay = getFirstCalendarDay(month, year)
     const lastCalendarDay = getLastCalendarDay(month, year)
 
-    const dailyTimeSheets = await getDailyTimeSheets(userId, firstCalendarDay, lastCalendarDay)
-    if (!dailyTimeSheets) return []
+    const dailyTimesheets = await getDailyTimesheets(userId, firstCalendarDay, lastCalendarDay)
+    if (!dailyTimesheets) return []
 
-    const dailyTimeSheetChunks = splitArray(dailyTimeSheets, 7)
-    return dailyTimeSheetChunks.map((dailyTimeSheets, index) => {
+    const dailyTimesheetChunks = splitArray(dailyTimesheets, 7)
+    return dailyTimesheetChunks.map((dailyTimesheets, index) => {
         return {
             order: index + 1,
-            days: createTimesheetDays(dailyTimeSheets, month)
+            days: createTimesheetDays(dailyTimesheets, month)
         }
     })
 }
 
-function createTimesheetDays(dailyTimeSheets: DailyTimeSheet[], targetMonth: number): TimesheetDay[] {
-    return dailyTimeSheets.map(dailyTimeSheet => {
-        const dailyTimeSheetDate = new Date(dailyTimeSheet.date)
+function createTimesheetDays(dailyTimesheets: DailyTimesheet[], targetMonth: number): TimesheetDay[] {
+    return dailyTimesheets.map(dailyTimesheet => {
+        const dailyTimesheetDate = new Date(dailyTimesheet.date)
         const timesheetDay: TimesheetDay = {
-            date: dailyTimeSheetDate,
-            isDisabled: targetMonth === dailyTimeSheetDate.getMonth() ? false : true,
-            hours: calculateTotalHours(dailyTimeSheet.time_sheet_reports)
+            date: dailyTimesheetDate,
+            isDisabled: targetMonth !== dailyTimesheetDate.getMonth(),
+            hours: calculateTotalHours(dailyTimesheet.time_sheet_reports)
         }
         return timesheetDay
     })
 }
 
-function calculateTotalHours(timesheetReports: TimeSheetReport[]): number {
+function calculateTotalHours(timesheetReports: TimesheetReport[]): number {
     let totalHours = 0
     timesheetReports.forEach(timesheetReport => {
         totalHours += (timesheetReport.hours + timesheetReport.overtime_hours)
@@ -67,7 +65,7 @@ function calculateTotalHours(timesheetReports: TimeSheetReport[]): number {
     return totalHours
 }
 
-function splitArray(array: DailyTimeSheet[], size: number): [][] {
+function splitArray(array: DailyTimesheet[], size: number): [][] {
     const arrayCopy = array.splice(0)
     const arrayChunks = [] as any
 

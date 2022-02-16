@@ -1,4 +1,4 @@
-import timesheetApiClient from ".";
+import timesheetApiClient from "../timesheet.api";
 import User from "../models/api/User";
 
 async function login(email: string, password: string): Promise<User | undefined> {

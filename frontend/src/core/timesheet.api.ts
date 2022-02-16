@@ -1,5 +1,5 @@
 import axios from "axios";
-import User from "../models/api/User";
+import User from "./models/api/User";
 
 const jsonUser = localStorage.getItem('user')
 const user: User = jsonUser ? JSON.parse(jsonUser) : null;

@@ -1,4 +1,4 @@
-import { logout } from "../../../core/api/auth.api";
+import { logout } from "../../../core/services/auth.service";
 import { useAuth } from "../../../core/contexts/Auth.context";
 
 export default function Navigation() {
