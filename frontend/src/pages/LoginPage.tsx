@@ -12,13 +12,10 @@ export default function LoginPage() {
         event.preventDefault();
         const user = await login(email, password)
 
-        console.log(user)
+        if (!user) return setHasErrors(true)
 
-        if (user) {
-            localStorage.setItem('user', JSON.stringify(user))
-            window.location.reload()
-        }
-        setHasErrors(true)
+        localStorage.setItem('user', JSON.stringify(user))
+        window.location.reload()
     }
 
     return (
@@ -34,7 +31,7 @@ export default function LoginPage() {
                             </li>
                             <li className={`info__list ${hasErrors ? 'error' : ''}`}>
                                 <label className="info__label">Password:</label>
-                                <input type="text" className="in-text" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <input type="password" className="in-text" value={password} onChange={(e) => setPassword(e.target.value)} />
                             </li>
                         </ul>
                         <div className="btn-wrap">

@@ -10,4 +10,12 @@ async function login(email: string, password: string): Promise<User | undefined>
     }
 }
 
-export { login }
+async function logout() {
+    try {
+        await timesheetApiClient.get('/logout/');
+    } catch (error) {
+        console.error('Logout error\n', error);
+    }
+}
+
+export { login, logout }

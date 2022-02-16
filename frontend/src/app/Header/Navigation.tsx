@@ -1,4 +1,16 @@
+import { logout } from "../../core/api/auth.api";
+import { useAuth } from "../../core/contexts/Auth.context";
+
 export default function Navigation() {
+
+    const { clearUser } = useAuth()
+
+    const handleLogout = function () {
+        logout()
+        clearUser()
+        window.location.reload()
+    }
+
     return (
         <>
             <nav className="navigation">
@@ -35,7 +47,7 @@ export default function Navigation() {
                 </div>
                 <ul>
                     <li className="logout">
-                        <a className="logout__link" href="/">Logout</a>
+                        <p className="logout__link" onClick={handleLogout}>Logout</p>
                     </li>
                 </ul>
             </div>
