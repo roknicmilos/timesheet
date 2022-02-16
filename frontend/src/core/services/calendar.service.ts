@@ -6,9 +6,9 @@ import TimesheetReport from '../models/api/TimesheetReport'
 import { getDailyTimesheets } from './dailyTimesheet.service'
 
 export async function getTimesheetMonth(userId: number, month: number, year: number): Promise<TimesheetMonth> {
-    const firstDayOfTheMonth = new Date(year, month, 1)
-
     const timesheetWeeks = await createTimesheetWeeks(userId, month, year)
+
+    const firstDayOfTheMonth = new Date(year, month, 1)
 
     return {
         month: month,
@@ -18,11 +18,7 @@ export async function getTimesheetMonth(userId: number, month: number, year: num
         calculateTotalHours: function () {
             let totalHours = 0
             timesheetWeeks?.forEach(week => {
-                week.days.forEach(day => {
-                    if (!day.isDisabled) {
-                        totalHours += day.hours
-                    }
-                })
+                week.days.forEach(day => totalHours += day.hours)
             });
             return totalHours
         }
@@ -34,27 +30,107 @@ async function createTimesheetWeeks(userId: number, month: number, year: number)
     const lastCalendarDay = getLastCalendarDay(month, year)
 
     const dailyTimesheets = await getDailyTimesheets(userId, firstCalendarDay, lastCalendarDay)
+
     if (!dailyTimesheets) return []
 
-    const dailyTimesheetChunks = splitArray(dailyTimesheets, 7)
-    return dailyTimesheetChunks.map((dailyTimesheets, index) => {
+    let currentWeekMonday = firstCalendarDay
+    let currentWeekOrder = 1
+
+    const timesheetWeeks = []
+    while (currentWeekMonday < lastCalendarDay) {
+        const timesheetWeek = createTimesheetWeek(currentWeekMonday, dailyTimesheets, currentWeekOrder, month)
+        timesheetWeeks.push(timesheetWeek)
+        currentWeekMonday.setDate(currentWeekMonday.getDate() + 7)
+        currentWeekOrder++
+    }
+
+    return timesheetWeeks
+}
+
+function createTimesheetWeek(weekMonday: Date, dailyTimesheets: DailyTimesheet[], order: number, month: number): TimesheetWeek {
+    const timesheetWeek: TimesheetWeek = {
+        order,
+        previousMonthDays: [],
+        days: [],
+        nextMonthDays: [],
+    }
+
+    const monday = new Date(weekMonday)
+    const sunday = new Date(weekMonday)
+    sunday.setDate(monday.getDate() + 6)
+
+    const timesheetDays = createTimesheetDays(monday, sunday, dailyTimesheets)
+    timesheetDays.forEach(timesheetDay => {
+
+        if (isPreviousMonthDate(timesheetDay.date, month)) {
+            timesheetWeek.previousMonthDays.push(timesheetDay)
+        } else if (isNextMonthDate(timesheetDay.date, month)) {
+            timesheetWeek.nextMonthDays.push(timesheetDay)
+        } else {
+            timesheetWeek.days.push(timesheetDay)
+        }
+    })
+
+    return timesheetWeek
+}
+
+/**
+ * Function expects a date that has a month equal to or next to (- or + 1) the target month
+ * 
+ * @param date 
+ * @param targetMonth 
+ * @returns 
+ */
+function isPreviousMonthDate(date: Date, targetMonth: number): boolean {
+    // target month is January and the date is from December:
+    if (targetMonth === 0 && date.getMonth() === 11) return true
+
+
+    // target month is December and the date is from January:
+    if (targetMonth === 11 && date.getMonth() === 0) return false
+
+    return date.getMonth() < targetMonth
+}
+
+/**
+ * Function expects a date that has a month equal to or next to (- or + 1) the target month
+ * 
+ * @param date 
+ * @param targetMonth 
+ * @returns 
+ */
+function isNextMonthDate(date: Date, targetMonth: number): boolean {
+    // target month is December and the date is from January:
+    if (targetMonth === 11 && date.getMonth() === 0) return true
+
+    // target month is January and the date is from December:
+    if (targetMonth === 0 && date.getMonth() === 11) return false
+
+    return date.getMonth() > targetMonth
+}
+
+function createTimesheetDays(from: Date, until: Date, dailyTimesheets: Array<DailyTimesheet | undefined>): TimesheetDay[] {
+    return datesRange(from, until).map(date => {
+        const dailyTimesheet = dailyTimesheets.find(dailyTimesheet => {
+            if (!dailyTimesheet) return false
+            const dailyTimesheetDate = new Date(dailyTimesheet.date)
+            return dailyTimesheetDate.toDateString() === date.toDateString()
+        })
         return {
-            order: index + 1,
-            days: createTimesheetDays(dailyTimesheets, month)
+            date,
+            hours: dailyTimesheet ? calculateTotalHours(dailyTimesheet.time_sheet_reports) : 0
         }
     })
 }
 
-function createTimesheetDays(dailyTimesheets: DailyTimesheet[], targetMonth: number): TimesheetDay[] {
-    return dailyTimesheets.map(dailyTimesheet => {
-        const dailyTimesheetDate = new Date(dailyTimesheet.date)
-        const timesheetDay: TimesheetDay = {
-            date: dailyTimesheetDate,
-            isDisabled: targetMonth !== dailyTimesheetDate.getMonth(),
-            hours: calculateTotalHours(dailyTimesheet.time_sheet_reports)
-        }
-        return timesheetDay
-    })
+function datesRange(start: Date, end: Date): Date[] {
+    const dates = []
+    const currentDate = start
+    while (currentDate <= end) {
+        dates.push(new Date(currentDate))
+        currentDate.setDate(currentDate.getDate() + 1)
+    }
+    return dates
 }
 
 function calculateTotalHours(timesheetReports: TimesheetReport[]): number {
@@ -63,17 +139,6 @@ function calculateTotalHours(timesheetReports: TimesheetReport[]): number {
         totalHours += (timesheetReport.hours + timesheetReport.overtime_hours)
     })
     return totalHours
-}
-
-function splitArray(array: DailyTimesheet[], size: number): [][] {
-    const arrayCopy = array.splice(0)
-    const arrayChunks = [] as any
-
-    while (arrayCopy.length) {
-        arrayChunks.push(arrayCopy.splice(0, size))
-    }
-
-    return arrayChunks
 }
 
 function getFirstCalendarDay(month: number, year: number): Date {
