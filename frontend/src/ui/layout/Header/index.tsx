@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../../core/contexts/Auth.context'
 import whiteLogo from './../../../assets/images/logo/logo-white.png'
 import Navigation from './Navigation'
@@ -9,9 +10,9 @@ export default function Header() {
     return (
         <header className="header">
             <div className="inner-wrap">
-                <a href="/" className="logo">
+                <NavLink to="/" className="logo">
                     <img src={whiteLogo} alt="logo" />
-                </a>
+                </NavLink>
                 {user ? <Navigation /> : null}
             </div>
         </header>

@@ -1,5 +1,6 @@
 import { logout } from "../../../core/services/auth.service";
 import { useAuth } from "../../../core/contexts/Auth.context";
+import { NavLink } from "react-router-dom";
 
 export default function Navigation() {
 
@@ -11,28 +12,32 @@ export default function Navigation() {
         window.location.reload()
     }
 
+    const getNavLinkClassName = function ({ isActive }: { isActive: boolean }): string {
+        return `btn navigation__button ${isActive ? "navigation__button--active" : ""}`
+    }
+
     return (
         <>
             <nav className="navigation">
                 <button id="navigation__link" type="button" className="navigation__link"><span id="navigation__text" className="nav-toggle"></span></button>
                 <ul className="navigation__menu">
                     <li className="navigation__list">
-                        <a href="/" className="btn navigation__button navigation__button--active">Timesheet</a>
+                        <NavLink to="/" className={isActive => getNavLinkClassName(isActive)}>Timesheet</NavLink>
                     </li>
                     <li className="navigation__list">
-                        <a href="/" className="btn navigation__button">Clients</a>
+                        <NavLink to="/clients" className={isActive => getNavLinkClassName(isActive)}>Clients</NavLink>
                     </li>
                     <li className="navigation__list">
-                        <a href="/" className="btn navigation__button">Projects</a>
+                        <NavLink to="/projects" className={isActive => getNavLinkClassName(isActive)}>Projects</NavLink>
                     </li>
                     <li className="navigation__list">
-                        <a href="/" className="btn navigation__button">Categories</a>
+                        <NavLink to="/categories" className={isActive => getNavLinkClassName(isActive)}>Categories</NavLink>
                     </li>
                     <li className="navigation__list">
-                        <a href="/" className="btn navigation__button">Employees</a>
+                        <NavLink to="/employees" className={isActive => getNavLinkClassName(isActive)}>Employees</NavLink>
                     </li>
                     <li className="navigation__list">
-                        <a href="/" className="btn navigation__button">Reports</a>
+                        <NavLink to="/reports" className={isActive => getNavLinkClassName(isActive)}>Reports</NavLink>
                     </li>
                 </ul>
             </nav>
