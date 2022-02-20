@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { login } from "../../core/services/auth.service";
+import { requireAnonymous } from "../../hoc/requireAnonymous";
 
-export default function LoginPage() {
+function LoginPage() {
 
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
@@ -52,3 +53,5 @@ export default function LoginPage() {
         </div>
     )
 }
+
+export default requireAnonymous(LoginPage)

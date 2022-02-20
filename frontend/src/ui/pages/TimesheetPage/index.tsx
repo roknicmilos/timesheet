@@ -3,9 +3,10 @@ import CalendarWeek from "./CalendarWeek"
 import TimesheetMonth from "../../../core/models/TimesheetMonth"
 import { getTimesheetMonth } from "./../../../core/services/calendar.service"
 import { useAuth } from "../../../core/contexts/Auth.context"
+import { requireAuthenticated } from "../../../hoc/requireAuthenticated"
 
 
-export default function TimesheetPage() {
+function TimesheetPage() {
     const [currentMonth, setCurrentMonth] = useState<number>(() => {
         const now = new Date()
         return now.getMonth()
@@ -88,3 +89,5 @@ export default function TimesheetPage() {
 
     return timesheetMonth ? <PageContent /> : <div>LOADING</div>
 }
+
+export default requireAuthenticated(TimesheetPage)

@@ -1,6 +1,7 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, } from "react-router-dom";
 import { AuthContextProvider } from "../core/contexts/Auth.context";
-import IndexPage from "./pages/IndexPage";
+import LoginPage from "./pages/LoginPage";
+import TimesheetPage from "./pages/TimesheetPage"
 import Footer from "./layout/Footer";
 import Header from "./layout/Header";
 
@@ -12,7 +13,8 @@ export default function App() {
                     <Header />
                     <div className="wrapper">
                         <Routes>
-                            <Route path='/' element={<IndexPage />} />
+                            <Route path="/" element={<TimesheetPage />} />
+                            <Route path="/login" element={<LoginPage />} />
                         </Routes>
                     </div>
                 </div>
