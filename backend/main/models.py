@@ -1,5 +1,5 @@
 import string
-from typing import List, Set
+from typing import List
 from django.db import models, transaction
 from django_extensions.db.models import TimeStampedModel
 
@@ -10,14 +10,14 @@ class BaseManager(models.Manager):
     def create_batch(self, *args) -> List[models.Model]:
         return [self.create(**kwargs) for kwargs in args]
 
-    def get_available_alphabet_letters(self, field_name: str) -> Set[str]:
-        available_alphabet_letters = set()
+    def get_available_alphabet_letters(self, field_name: str) -> List[str]:
+        available_alphabet_letters = []
 
         all_alphabet_letters = list(string.ascii_lowercase)
         for letter in all_alphabet_letters:
             filters = {f'{field_name}__istartswith': letter}
             if self.filter(**filters).exists():
-                available_alphabet_letters.add(letter)
+                available_alphabet_letters.append(letter)
 
         return available_alphabet_letters
 

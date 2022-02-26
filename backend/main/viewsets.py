@@ -1,0 +1,27 @@
+from typing import Type
+from django.core.exceptions import ImproperlyConfigured
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from main.models import BaseModel
+
+
+class ViewSet(viewsets.ViewSet):
+    model_class: Type[BaseModel]
+    available_alphabet_letters_default_field: str = None
+
+    @action(detail=False, methods=['get'], url_path=r'available-alphabet-letters')
+    def available_alphabet_letters(self, request) -> Response:
+        if not self.model_class:
+            raise ImproperlyConfigured("ViewSet requires 'model_class' to be defined")
+
+        if not self.available_alphabet_letters_default_field:
+            raise ImproperlyConfigured("ViewSet requires 'available_alphabet_letters_default_field' to be defined")
+
+        field_names = request.query_params.get('fields', self.available_alphabet_letters_default_field).split(',')
+
+        data = {}
+        for field_name in field_names:
+            data[field_name] = self.model_class.objects.get_available_alphabet_letters(field_name=field_name)
+
+        return Response(data=data)
