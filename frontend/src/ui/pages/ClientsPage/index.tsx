@@ -1,74 +1,84 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { getClients, getClientsAvailableAlphabetLetters } from "../../../core/services/client.service";
 import { requireAuthenticated } from "../../../hoc/requireAuthenticated";
+import Client from "../../../core/models/Client";
 import Accordion from "../../components/Accordion";
 import AlphabetFilter from "../../components/AlphabetFilter";
 import Pager from "../../components/Pager";
 
 function ClientsPage() {
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [availableAlphabetLetters, setAvailableAlphabetLetters] = useState<string[]>();
+    const [clients, setClients] = useState<Client[]>();
 
-    const [availableLetters, setAvailableLetters] = useState(() => {
-        // TODO: fetch from API
-        return ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm']
-    })
+    const setupComponentData = useCallback(async () => {
+        if (!isLoading) return;
 
-    const [clients, setClients] = useState<{ id: number, title: string, isSelected: boolean }[]>(() => {
-        // TODO: fetch from API
-        return [
-            {
-                id: 1,
-                title: 'Client 1',
-                isSelected: false
-            },
-            {
-                id: 2,
-                title: 'Client 2',
-                isSelected: false
-            }
-        ]
-    })
+        const letters = await getClientsAvailableAlphabetLetters();
+        setAvailableAlphabetLetters(letters);
 
+        const clients = await getClients();
+        setClients(clients);
 
-    const selectClient = useCallback((clientId: number) => {
-        setClients(previousClients => {
-            return previousClients.map(client => ({ ...client, isSelected: client.id === clientId }))
-        })
-    }, [clients])
+        setIsLoading(false);
+    }, [isLoading, availableAlphabetLetters, clients]);
+
+    useEffect(() => {
+        setupComponentData();
+    }, []);
+
+    const selectClient = useCallback(
+        (clientId: number) => {
+            setClients((previousClients) => {
+                return previousClients!.map((client) => ({
+                    ...client,
+                    isSelected: client.id === clientId && !client.isSelected,
+                }));
+            });
+        },
+        [clients]
+    );
 
     const Accordions = useCallback(() => {
         return (
             <>
-                {clients.map(client => {
+                {clients!.map((client) => {
                     return (
                         <Accordion
                             key={client.id}
-                            title={client.title}
+                            title={client.name}
                             isActive={client.isSelected}
-                            onClick={() => selectClient(client.id)} />
-                    )
+                            onClick={() => selectClient(client.id)}
+                        />
+                    );
                 })}
             </>
-        )
-    }, [clients])
+        );
+    }, [clients]);
+
+    if (isLoading) {
+        return <div>LOADING</div>;
+    }
 
     return (
         <section className="content">
             <div className="main-content">
                 <h2 className="main-content__title">Clients</h2>
                 <div className="table-navigation">
-                    <a href="javascript:;" className="table-navigation__create btn-modal">
+                    <a href="#" className="table-navigation__create btn-modal">
                         <span>Create new client</span>
                     </a>
-                    <form className="table-navigation__input-container" action="javascript:;">
+                    <form className="table-navigation__input-container" action="#">
                         <input type="text" className="table-navigation__search" />
                         <button type="submit" className="icon__search"></button>
                     </form>
                 </div>
-                <AlphabetFilter availableLetters={availableLetters} selectedLetter="l" />
+                <AlphabetFilter availableLetters={availableAlphabetLetters} selectedLetter="l" />
                 <Accordions />
             </div>
             <Pager totalPages={5} currentPage={2} />
         </section>
-    )
+    );
 }
 
-export default requireAuthenticated(ClientsPage)
+export default requireAuthenticated(ClientsPage);

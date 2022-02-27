@@ -1,4 +1,4 @@
-import { Collapse } from 'react-collapse';
+import { Collapse } from "react-collapse";
 
 interface AccordionProps {
     title: string;
@@ -8,18 +8,13 @@ interface AccordionProps {
 }
 
 export default function Accordion({ title, isActive, onClick }: AccordionProps) {
-
-    console.log(title, isActive) // TODO: REMOVE
-
     return (
-        <div className='accordion' onClick={onClick}>
+        <div className="accordion" onClick={onClick}>
             <div className="accordion__intro">
                 <h4 className="accordion__title">{title}</h4>
             </div>
-
-            {/* check why Collapse doesn't work */}
-            <Collapse isOpened={isActive} >
-                <form className="accordion__content" action="javascript:;">
+            <Collapse isOpened={isActive}>
+                <form className="accordion__content" action="#">
                     <div className="info">
                         <div className="info__form">
                             <ul className="info__wrapper">
@@ -49,13 +44,15 @@ export default function Accordion({ title, isActive, onClick }: AccordionProps) 
                         </div>
                     </div>
                     <div className="btn-wrap">
-                        <button type="submit" className="btn btn--green"><span>Save changes</span></button>
-                        <button type="button" className="btn btn--red"><span>Delete</span></button>
+                        <button type="submit" className="btn btn--green">
+                            <span>Save changes</span>
+                        </button>
+                        <button type="button" className="btn btn--red">
+                            <span>Delete</span>
+                        </button>
                     </div>
                 </form>
             </Collapse>
-
         </div>
-    )
+    );
 }
-

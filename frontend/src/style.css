@@ -1024,7 +1024,7 @@ input[type=number] {
 }
 
 .accordion__content {
-    display   : none;
+    /* display   : none; */
     padding   : 0 20px 20px;
     opacity   : 1;
     background: #fff;

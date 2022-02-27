@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, List
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -25,3 +25,7 @@ class ViewSet(viewsets.ViewSet):
             data[field_name] = self.model_class.objects.get_available_alphabet_letters(field_name=field_name)
 
         return Response(data=data)
+
+    @classmethod
+    def get_readonly_actions(cls) -> List[str]:
+        return ['list', 'retrieve', 'available_alphabet_letters']

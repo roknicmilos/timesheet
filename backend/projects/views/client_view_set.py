@@ -2,7 +2,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from auth.authentication import TokenAuthentication
-from auth.permissions import IsAdmin
+from auth.permissions import IsReadingOrAdmin
 from main.utils import paginate_queryset
 from main.viewsets import ViewSet
 from projects.models import Client
@@ -11,7 +11,7 @@ from projects.serializers import ClientSerializer
 
 class ClientViewSet(ViewSet):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsReadingOrAdmin]
     model_class = Client
     available_alphabet_letters_default_field = 'name'
 
@@ -19,7 +19,6 @@ class ClientViewSet(ViewSet):
         clients = paginate_queryset(queryset=self.model_class.objects.all(), request=request)
         serializer = ClientSerializer(clients, many=True)
         return Response(data=serializer.data)
-
 
     def create(self, request, **kwargs):
         serializer = ClientSerializer(data=request.data)
