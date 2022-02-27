@@ -8,6 +8,8 @@ import Pager from "../../components/Pager";
 
 function ClientsPage() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [totalPages, setTotalPage] = useState<number>(0);
+    const [currentPage, setCurrentPage] = useState<number>(1);
     const [availableAlphabetLetters, setAvailableAlphabetLetters] = useState<string[]>();
     const [clients, setClients] = useState<Client[]>();
 
@@ -17,15 +19,35 @@ function ClientsPage() {
         const letters = await getClientsAvailableAlphabetLetters();
         setAvailableAlphabetLetters(letters);
 
-        const clients = await getClients();
+        const { clients, totalPages } = await getClients(currentPage);
         setClients(clients);
+        setTotalPage(totalPages);
 
         setIsLoading(false);
-    }, [isLoading, availableAlphabetLetters, clients]);
+    }, [isLoading, totalPages, currentPage, availableAlphabetLetters, clients]);
 
     useEffect(() => {
+        // TODO: check why useEffect is called a lot of times
         setupComponentData();
+    }, [setupComponentData]);
+
+    const handleCurrentPage = useCallback(
+        (page) => {
+            setIsLoading(true);
+            setCurrentPage(page);
+        },
+        [currentPage]
+    );
+
+    const handlePreviousPage = useCallback(() => {
+        setIsLoading(true);
+        setCurrentPage((previousPage) => (previousPage > 1 ? previousPage - 1 : previousPage));
     }, []);
+
+    const handleNextPage = useCallback(() => {
+        setIsLoading(true);
+        setCurrentPage((previousPage) => (previousPage < totalPages! ? previousPage + 1 : previousPage));
+    }, [totalPages]);
 
     const selectClient = useCallback(
         (clientId: number) => {
@@ -73,10 +95,16 @@ function ClientsPage() {
                         <button type="submit" className="icon__search"></button>
                     </form>
                 </div>
-                <AlphabetFilter availableLetters={availableAlphabetLetters} selectedLetter="l" />
+                <AlphabetFilter availableLetters={availableAlphabetLetters} />
                 <Accordions />
             </div>
-            <Pager totalPages={5} currentPage={2} />
+            <Pager
+                totalPages={totalPages}
+                currentPage={currentPage}
+                onPreviousPage={handlePreviousPage}
+                onPageChange={handleCurrentPage}
+                onNextPage={handleNextPage}
+            />
         </section>
     );
 }

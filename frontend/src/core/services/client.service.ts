@@ -11,12 +11,20 @@ export async function getClientsAvailableAlphabetLetters(): Promise<string[]> {
     }
 }
 
-export async function getClients(): Promise<Client[]> {
+interface ClientsListResponse {
+    clients: Client[];
+    totalPages: number;
+}
+
+export async function getClients(page: number, itemsPerPage: number = 5): Promise<ClientsListResponse> {
     try {
-        const response = await timesheetApiClient.get("/clients");
-        return response.data;
+        const response = await timesheetApiClient.get(`/clients?page=${page}&ipp=${itemsPerPage}`);
+        return {
+            clients: response.data.items,
+            totalPages: response.data.pagination.total_pages,
+        };
     } catch (error) {
         console.error("Error while fetching clients\n", error);
-        return [];
+        return {} as ClientsListResponse;
     }
 }

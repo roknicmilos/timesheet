@@ -4,11 +4,22 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from main.models import BaseModel
+from main.serializers import ListResponseSerializer
+from rest_framework import serializers
 
 
 class ViewSet(viewsets.ViewSet):
     model_class: Type[BaseModel]
     available_alphabet_letters_default_field: str = None
+    serializer_class: Type[serializers.ModelSerializer]
+
+    def list(self, request, **kwargs):
+        serializer = ListResponseSerializer(
+            model_class=self.model_class,
+            model_serializer_class=self.serializer_class,
+            request=request
+        )
+        return Response(data=serializer.data)
 
     @action(detail=False, methods=['get'], url_path=r'available-alphabet-letters')
     def available_alphabet_letters(self, request) -> Response:

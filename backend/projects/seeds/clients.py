@@ -41,4 +41,44 @@ seed_items = [
         country="Srbija",
         zip_code=21000
     ),
+    Client(
+        pk=6,
+        name="IDEA",
+        street="Bulevar Vojvode Stepe",
+        city="Novi Sad",
+        country="Srbija",
+        zip_code=21000
+    ),
+    Client(
+        pk=7,
+        name="Lidl",
+        street="Bulevar Evrope",
+        city="Novi Sad",
+        country="Srbija",
+        zip_code=21000
+    ),
+    Client(
+        pk=8,
+        name="Camelot",
+        street="Sremska",
+        city="Novi Sad",
+        country="Srbija",
+        zip_code=21000
+    ),
+    Client(
+        pk=9,
+        name="Pekara Evropa",
+        street="Dr Ivana Ribara",
+        city="Novi Sad",
+        country="Srbija",
+        zip_code=21000
+    ),
+    Client(
+        pk=10,
+        name="McDonald's",
+        street="Bulevar Oslobođenja",
+        city="Novi Sad",
+        country="Srbija",
+        zip_code=21000
+    ),
 ]

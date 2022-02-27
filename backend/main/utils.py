@@ -27,9 +27,9 @@ def get_model_admin_change_details_url(obj: Model) -> str:
     return reverse(f'admin:{content_type.app_label}_{content_type.model}_change', args=(obj.id,))
 
 
-def paginate_queryset(queryset: QuerySet, request) -> QuerySet:
+def paginate_queryset(queryset: QuerySet, request, default_items_per_page: int = 50) -> QuerySet:
     page = int(request.query_params.get('page', 1))
-    items_per_page = int(request.query_params.get('ipp', 50))
+    items_per_page = int(request.query_params.get('ipp', default_items_per_page))
     limit = items_per_page * page
     offset = limit - items_per_page
     return queryset[offset:limit]
