@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import viewsets
-from main.utils import paginate_queryset, get_bool_url_param_value
+from main.utils import get_bool_url_param_value, Paginator
 from timesheet.models import TimeSheetReport
 from timesheet.serializers import TimeSheetReportSerializer
 
@@ -10,8 +10,9 @@ class TimeSheetReportViewSet(viewsets.ViewSet):
 
     def list(self, request, **kwargs):
         filters = self._get_list_filters(url_params=request.query_params)
-        time_sheet_reports = paginate_queryset(queryset=TimeSheetReport.objects.filter(filters), request=request)
-        serializer = TimeSheetReportSerializer(time_sheet_reports, many=True)
+        queryset = TimeSheetReport.objects.filter(filters)
+        paginator = Paginator(queryset=queryset, request=request)
+        serializer = TimeSheetReportSerializer(paginator.page, many=True)
         return Response(data=serializer.data)
 
     @staticmethod

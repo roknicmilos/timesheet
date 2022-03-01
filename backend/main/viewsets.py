@@ -1,5 +1,6 @@
 from typing import Type, List
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models import QuerySet, Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,11 +16,18 @@ class ViewSet(viewsets.ViewSet):
 
     def list(self, request, **kwargs):
         serializer = ListResponseSerializer(
-            model_class=self.model_class,
+            queryset=self.get_list_queryset(),
             model_serializer_class=self.serializer_class,
             request=request
         )
         return Response(data=serializer.data)
+
+    def get_list_queryset(self) -> QuerySet:
+        filters = self.get_list_filters()
+        return self.model_class.objects.filter(filters)
+
+    def get_list_filters(self) -> Q:
+        return Q()
 
     @action(detail=False, methods=['get'], url_path=r'available-alphabet-letters')
     def available_alphabet_letters(self, request) -> Response:

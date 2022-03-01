@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from auth.authentication import TokenAuthentication
 from auth.permissions import HasAccessToUserResources
-from main.utils import paginate_queryset
+from main.utils import Paginator
 from timesheet.models import DailyTimeSheet, TimeSheetReport
 from timesheet.serializers import DailyTimeSheetSerializer
 
@@ -16,8 +16,9 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
 
     def list(self, request, **kwargs):
         filters = self._get_list_filters(url_params=request.query_params)
-        daily_time_sheets = paginate_queryset(queryset=DailyTimeSheet.objects.filter(filters), request=request)
-        serializer = DailyTimeSheetSerializer(daily_time_sheets, many=True)
+        queryset = DailyTimeSheet.objects.filter(filters)
+        paginator = Paginator(queryset=queryset, request=request)
+        serializer = DailyTimeSheetSerializer(paginator.page, many=True)
         return Response(data=serializer.data)
 
     def _get_list_filters(self, url_params: dict) -> Q:

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getClients, getClientsAvailableAlphabetLetters } from "../../../core/services/client.service";
+import searchIcon from "./../../../assets/images/search.png";
 import { requireAuthenticated } from "../../../hoc/requireAuthenticated";
 import Client from "../../../core/models/Client";
 import Accordion from "../../components/Accordion";
@@ -92,7 +93,9 @@ function ClientsPage() {
                     </a>
                     <form className="table-navigation__input-container" action="#">
                         <input type="text" className="table-navigation__search" />
-                        <button type="submit" className="icon__search"></button>
+                        <button type="submit" className="icon__search">
+                            <img src={searchIcon} alt="search icon" />
+                        </button>
                     </form>
                 </div>
                 <AlphabetFilter availableLetters={availableAlphabetLetters} />

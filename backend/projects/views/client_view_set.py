@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,6 +15,15 @@ class ClientViewSet(ViewSet):
     model_class = Client
     serializer_class = ClientSerializer
     available_alphabet_letters_default_field = 'name'
+
+    def get_list_filters(self) -> Q:
+        filters = super(ClientViewSet, self).get_list_filters()
+        url_params = self.request.query_params
+        if 'name_starts_with' in url_params:
+            filters &= Q(name__istartswith=url_params.get('name_starts_with'))
+        if 'name_contains' in url_params:
+            filters &= Q(name__icontains=url_params.get('name_contains'))
+        return filters
 
     def create(self, request, **kwargs):
         serializer = ClientSerializer(data=request.data)
