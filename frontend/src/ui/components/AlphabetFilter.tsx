@@ -1,9 +1,10 @@
 interface AlphabetFilter {
     availableLetters?: string[];
     selectedLetter?: string;
+    onSelectLetter(letter: string): void;
 }
 
-export default function AlphabetFilter({ availableLetters = [], selectedLetter }: AlphabetFilter) {
+export default function AlphabetFilter({ availableLetters = [], selectedLetter, onSelectLetter }: AlphabetFilter) {
     const alphabet = [
         "a",
         "b",
@@ -47,7 +48,7 @@ export default function AlphabetFilter({ availableLetters = [], selectedLetter }
                     }
 
                     return (
-                        <li className="alphabet__list" key={letter}>
+                        <li className="alphabet__list" key={letter} onClick={() => onSelectLetter(letter)}>
                             <a className={className} href="#">
                                 {letter}
                             </a>

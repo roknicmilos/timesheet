@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getClients, getClientsAvailableAlphabetLetters } from "../../../core/services/client.service";
+import { ClientsFilters, getClients, getClientsAvailableAlphabetLetters } from "../../../core/services/client.service";
 import searchIcon from "./../../../assets/images/search.png";
 import { requireAuthenticated } from "../../../hoc/requireAuthenticated";
 import Client from "../../../core/models/Client";
@@ -10,27 +10,27 @@ import Pager from "../../components/Pager";
 function ClientsPage() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [totalPages, setTotalPage] = useState<number>(0);
+    const [filters, setFilters] = useState<ClientsFilters>({ name_contains: "" });
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [availableAlphabetLetters, setAvailableAlphabetLetters] = useState<string[]>();
     const [clients, setClients] = useState<Client[]>();
 
-    const setupComponentData = useCallback(async () => {
+    useEffect(() => {
+        // TODO: check why this method is called multiple times
+
         if (!isLoading) return;
 
-        const letters = await getClientsAvailableAlphabetLetters();
-        setAvailableAlphabetLetters(letters);
-
-        const { clients, totalPages } = await getClients(currentPage);
-        setClients(clients);
-        setTotalPage(totalPages);
-
-        setIsLoading(false);
+        getClientsAvailableAlphabetLetters()
+            .then((letters) => {
+                setAvailableAlphabetLetters(letters);
+                return getClients(currentPage, filters);
+            })
+            .then(({ clients, totalPages }) => {
+                setClients(clients);
+                setTotalPage(totalPages);
+                setIsLoading(false);
+            });
     }, [isLoading, totalPages, currentPage, availableAlphabetLetters, clients]);
-
-    useEffect(() => {
-        // TODO: check why useEffect is called a lot of times
-        setupComponentData();
-    }, [setupComponentData]);
 
     const handleCurrentPage = useCallback(
         (page) => {
@@ -49,6 +49,23 @@ function ClientsPage() {
         setIsLoading(true);
         setCurrentPage((previousPage) => (previousPage < totalPages! ? previousPage + 1 : previousPage));
     }, [totalPages]);
+
+    const applyLetterFilter = useCallback((letter: string) => {
+        setIsLoading(true);
+        setFilters((previousFilters) => ({ ...previousFilters, name_starts_with: letter }));
+    }, []);
+
+    const updateSearchWord = useCallback((event) => {
+        setFilters((previousFilters) => ({
+            ...previousFilters,
+            name_contains: event.target.value,
+        }));
+    }, []);
+
+    const applySearchWord = useCallback((event) => {
+        setCurrentPage(1);
+        setIsLoading(true);
+    }, []);
 
     const selectClient = useCallback(
         (clientId: number) => {
@@ -91,14 +108,23 @@ function ClientsPage() {
                     <a href="#" className="table-navigation__create btn-modal">
                         <span>Create new client</span>
                     </a>
-                    <form className="table-navigation__input-container" action="#">
-                        <input type="text" className="table-navigation__search" />
+                    <form className="table-navigation__input-container" onSubmit={applySearchWord}>
+                        <input
+                            type="text"
+                            className="table-navigation__search"
+                            value={filters?.name_contains}
+                            onChange={updateSearchWord}
+                        />
                         <button type="submit" className="icon__search">
                             <img src={searchIcon} alt="search icon" />
                         </button>
                     </form>
                 </div>
-                <AlphabetFilter availableLetters={availableAlphabetLetters} />
+                <AlphabetFilter
+                    availableLetters={availableAlphabetLetters}
+                    selectedLetter={filters.name_starts_with}
+                    onSelectLetter={applyLetterFilter}
+                />
                 <Accordions />
             </div>
             <Pager
