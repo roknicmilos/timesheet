@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { ClientsFilters, getClients, getClientsAvailableAlphabetLetters } from "../../../core/services/client.service";
 import searchIcon from "./../../../assets/images/search.png";
 import { requireAuthenticated } from "../../../hoc/requireAuthenticated";
-import Client from "../../../core/models/Client";
-import Accordion from "../../components/Accordion";
+import Client from "../../../core/models/api/Client";
 import AlphabetFilter from "../../components/AlphabetFilter";
+import ClientAccordion from "./ClientAccordion";
 import Pager from "../../components/Pager";
 
 function ClientsPage() {
@@ -14,6 +14,7 @@ function ClientsPage() {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [availableAlphabetLetters, setAvailableAlphabetLetters] = useState<string[]>();
     const [clients, setClients] = useState<Client[]>();
+    const [selectedClientId, setSelectedClientId] = useState<number>();
 
     useEffect(() => {
         // TODO: check why this method is called multiple times
@@ -67,34 +68,33 @@ function ClientsPage() {
         setIsLoading(true);
     }, []);
 
-    const selectClient = useCallback(
-        (clientId: number) => {
-            setClients((previousClients) => {
-                return previousClients!.map((client) => ({
-                    ...client,
-                    isSelected: client.id === clientId && !client.isSelected,
-                }));
-            });
-        },
-        [clients]
-    );
+    const selectClient = useCallback((clientId: number) => {
+        setSelectedClientId(clientId);
+    }, []);
 
-    const Accordions = useCallback(() => {
+    const updateClient = useCallback((updatedClient: Client) => {
+        setClients((previousClients) => {
+            return previousClients!.map((client) => (client.id === updatedClient.id ? updatedClient : client));
+        });
+    }, []);
+
+    const CleintAccordions = useCallback(() => {
         return (
             <>
                 {clients!.map((client) => {
                     return (
-                        <Accordion
+                        <ClientAccordion
                             key={client.id}
-                            title={client.name}
-                            isActive={client.isSelected}
+                            client={client}
+                            isSelected={client.id === selectedClientId}
                             onClick={() => selectClient(client.id)}
+                            onUpdateClient={updateClient}
                         />
                     );
                 })}
             </>
         );
-    }, [clients]);
+    }, [clients, selectedClientId]);
 
     if (isLoading) {
         return <div>LOADING</div>;
@@ -125,7 +125,7 @@ function ClientsPage() {
                     selectedLetter={filters.name_starts_with}
                     onSelectLetter={applyLetterFilter}
                 />
-                <Accordions />
+                <CleintAccordions />
             </div>
             <Pager
                 totalPages={totalPages}

@@ -1,4 +1,4 @@
-import Client from "../models/Client";
+import Client from "../models/api/Client";
 import timesheetApiClient from "../timesheet.api";
 
 export async function getClientsAvailableAlphabetLetters(): Promise<string[]> {
@@ -45,4 +45,14 @@ function prepareClientsURLParameters(page: number, filters?: ClientsFilters): st
             .join("&");
     }
     return urlParams;
+}
+
+export async function updateClient(client: Client): Promise<Client> {
+    try {
+        const response = await timesheetApiClient.put(`/clients/${client.id}/`, client);
+        return response.data;
+    } catch (error) {
+        console.error("Error while updating client\n", error);
+        return {} as Client;
+    }
 }

@@ -24,7 +24,7 @@ class ViewSet(viewsets.ViewSet):
 
     def get_list_queryset(self) -> QuerySet:
         filters = self.get_list_filters()
-        return self.model_class.objects.filter(filters)
+        return self.model_class.objects.filter(filters).order_by('-modified')
 
     def get_list_filters(self) -> Q:
         return Q()
