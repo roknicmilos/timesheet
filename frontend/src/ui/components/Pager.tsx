@@ -13,12 +13,12 @@ export default function Pager({ totalPages, currentPage, onPreviousPage, onPageC
     const nextPageClassName = `pagination__button ${currentPage === totalPages ? "pagination__button--disabled" : ""}`;
     return (
         <div className="pagination">
-            <ul className="pagination__navigation">
-                <li className="pagination__list">
+            <div className="pagination__navigation">
+                <div className="pagination__list">
                     <div className={previousPageClassName} onClick={onPreviousPage}>
                         Previous
                     </div>
-                </li>
+                </div>
                 {Array(totalPages)
                     .fill(null)
                     .map((_, index) => (
@@ -29,12 +29,12 @@ export default function Pager({ totalPages, currentPage, onPreviousPage, onPageC
                             onClick={() => onPageChange(index + 1)}
                         />
                     ))}
-                <li className="pagination__list">
+                <div className="pagination__list">
                     <div className={nextPageClassName} onClick={onNextPage}>
                         Next
                     </div>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
     );
 }

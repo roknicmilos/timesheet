@@ -7,10 +7,8 @@ interface PageButtonProps {
 export default function PageButton({ pageNumber, isActive, onClick }: PageButtonProps) {
     const className = `pagination__button ${isActive ? "pagination__button--active" : ""}`;
     return (
-        <li className="pagination__list" onClick={onClick}>
-            <a className={className} href="#">
-                {pageNumber}
-            </a>
-        </li>
+        <div className="pagination__list" onClick={onClick}>
+            <div className={className}>{pageNumber}</div>
+        </div>
     );
 }

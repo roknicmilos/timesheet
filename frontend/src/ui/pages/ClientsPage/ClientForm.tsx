@@ -16,7 +16,7 @@ export default function ClientForm({ client, onSubmit }: ClientFormProps) {
             event.preventDefault();
             updateClient(formData).then((updatedClient) => onSubmit(updatedClient));
         },
-        [formData]
+        [formData, onSubmit]
     );
 
     const handleChange = useCallback((event) => {

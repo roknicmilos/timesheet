@@ -4,8 +4,9 @@ import searchIcon from "./../../../assets/images/search.png";
 import { requireAuthenticated } from "../../../hoc/requireAuthenticated";
 import Client from "../../../core/models/api/Client";
 import AlphabetFilter from "../../components/AlphabetFilter";
-import ClientAccordion from "./ClientAccordion";
 import Pager from "../../components/Pager";
+import Spinner from "../../components/Spinner";
+import CleintAccordionList from "./ClinetAccordionList";
 
 function ClientsPage() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -17,43 +18,53 @@ function ClientsPage() {
     const [selectedClientId, setSelectedClientId] = useState<number>();
 
     useEffect(() => {
-        // TODO: check why this method is called multiple times
-
-        if (!isLoading) return;
-
-        getClientsAvailableAlphabetLetters()
-            .then((letters) => {
-                setAvailableAlphabetLetters(letters);
-                return getClients(currentPage, filters);
-            })
-            .then(({ clients, totalPages }) => {
-                setClients(clients);
-                setTotalPage(totalPages);
-                setIsLoading(false);
-            });
-    }, [isLoading, totalPages, currentPage, availableAlphabetLetters, clients]);
-
-    const handleCurrentPage = useCallback(
-        (page) => {
-            setIsLoading(true);
-            setCurrentPage(page);
-        },
-        [currentPage]
-    );
-
-    const handlePreviousPage = useCallback(() => {
-        setIsLoading(true);
-        setCurrentPage((previousPage) => (previousPage > 1 ? previousPage - 1 : previousPage));
+        // TODO: useEffect complains about missing dependency (setup)
+        setup();
     }, []);
 
-    const handleNextPage = useCallback(() => {
+    const setup = () => {
         setIsLoading(true);
-        setCurrentPage((previousPage) => (previousPage < totalPages! ? previousPage + 1 : previousPage));
-    }, [totalPages]);
+        getClientsAvailableAlphabetLetters().then((letters) => {
+            setAvailableAlphabetLetters(letters);
+        });
+        fetchClients(currentPage, filters);
+    };
+
+    const fetchClients = (page: number, filters: ClientsFilters) => {
+        setIsLoading(true);
+        getClients(page, filters).then(({ clients, totalPages }) => {
+            setClients(clients);
+            setTotalPage(totalPages);
+            setIsLoading(false);
+        });
+    };
+
+    const changePage = useCallback(
+        (page) => {
+            setCurrentPage(page);
+            fetchClients(page, filters);
+        },
+        [filters]
+    );
+
+    const getPreviousPage = useCallback(() => {
+        const previousPage = currentPage - 1;
+        setCurrentPage(previousPage);
+        fetchClients(previousPage, filters);
+    }, [currentPage, filters]);
+
+    const getNextPage = useCallback(() => {
+        const nextPage = currentPage + 1;
+        setCurrentPage(nextPage);
+        fetchClients(nextPage, filters);
+    }, [currentPage, filters]);
 
     const applyLetterFilter = useCallback((letter: string) => {
-        setIsLoading(true);
-        setFilters((previousFilters) => ({ ...previousFilters, name_starts_with: letter }));
+        setFilters((previousFilters) => {
+            const newFilters = { ...previousFilters, name_starts_with: letter };
+            fetchClients(1, newFilters);
+            return newFilters;
+        });
     }, []);
 
     const updateSearchWord = useCallback((event) => {
@@ -63,10 +74,13 @@ function ClientsPage() {
         }));
     }, []);
 
-    const applySearchWord = useCallback((event) => {
-        setCurrentPage(1);
-        setIsLoading(true);
-    }, []);
+    const applySearchWord = useCallback(
+        (event) => {
+            setCurrentPage(1);
+            fetchClients(1, filters);
+        },
+        [filters]
+    );
 
     const selectClient = useCallback((clientId: number) => {
         setSelectedClientId(clientId);
@@ -78,36 +92,16 @@ function ClientsPage() {
         });
     }, []);
 
-    const CleintAccordions = useCallback(() => {
-        return (
-            <>
-                {clients!.map((client) => {
-                    return (
-                        <ClientAccordion
-                            key={client.id}
-                            client={client}
-                            isSelected={client.id === selectedClientId}
-                            onClick={() => selectClient(client.id)}
-                            onUpdateClient={updateClient}
-                        />
-                    );
-                })}
-            </>
-        );
-    }, [clients, selectedClientId]);
-
-    if (isLoading) {
-        return <div>LOADING</div>;
-    }
-
-    return (
+    return isLoading ? (
+        <Spinner />
+    ) : (
         <section className="content">
             <div className="main-content">
                 <h2 className="main-content__title">Clients</h2>
                 <div className="table-navigation">
-                    <a href="#" className="table-navigation__create btn-modal">
+                    <div className="table-navigation__create btn-modal">
                         <span>Create new client</span>
-                    </a>
+                    </div>
                     <form className="table-navigation__input-container" onSubmit={applySearchWord}>
                         <input
                             type="text"
@@ -125,14 +119,19 @@ function ClientsPage() {
                     selectedLetter={filters.name_starts_with}
                     onSelectLetter={applyLetterFilter}
                 />
-                <CleintAccordions />
+                <CleintAccordionList
+                    clients={clients!}
+                    selectedClientId={selectedClientId!}
+                    onSelectClient={selectClient}
+                    onUpdateClient={updateClient}
+                />
             </div>
             <Pager
                 totalPages={totalPages}
                 currentPage={currentPage}
-                onPreviousPage={handlePreviousPage}
-                onPageChange={handleCurrentPage}
-                onNextPage={handleNextPage}
+                onPreviousPage={getPreviousPage}
+                onPageChange={changePage}
+                onNextPage={getNextPage}
             />
         </section>
     );

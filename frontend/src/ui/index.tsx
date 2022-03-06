@@ -1,9 +1,9 @@
-import { BrowserRouter, Route, Routes, } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthContextProvider } from "../core/contexts/Auth.context";
 import Footer from "./layout/Footer";
 import Header from "./layout/Header";
 import LoginPage from "./pages/LoginPage";
-import TimesheetPage from "./pages/TimesheetPage"
+import TimesheetPage from "./pages/TimesheetPage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import CategoriesPage from "./pages/CategoriesPage";
@@ -28,8 +28,8 @@ export default function App() {
                             <Route path="/reports" element={<ReportsPage />} />
                         </Routes>
                     </div>
+                    <Footer />
                 </div>
-                <Footer />
             </BrowserRouter>
         </AuthContextProvider>
     );
