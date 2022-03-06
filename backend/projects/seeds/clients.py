@@ -6,7 +6,7 @@ seed_items = [
         name="Coca Cola",
         street="7th street",
         city="New York",
-        country="USA",
+        country="United States",
         zip_code=10001
     ),
     Client(
@@ -14,7 +14,7 @@ seed_items = [
         name="Tesla",
         street="8th street",
         city="Los Angeles",
-        country="USA",
+        country="United States",
         zip_code=90001
     ),
     Client(
@@ -22,7 +22,7 @@ seed_items = [
         name="Space X",
         street="9th street",
         city="Chicago",
-        country="USA",
+        country="United States",
         zip_code=60007
     ),
     Client(
@@ -30,7 +30,7 @@ seed_items = [
         name="Plazma",
         street="Nikole Tesle",
         city="Beograd",
-        country="Srbija",
+        country="Serbia",
         zip_code=101801
     ),
     Client(
@@ -38,7 +38,7 @@ seed_items = [
         name="Matijević",
         street="Novosadskog sajma",
         city="Novi Sad",
-        country="Srbija",
+        country="Serbia",
         zip_code=21000
     ),
     Client(
@@ -46,7 +46,7 @@ seed_items = [
         name="IDEA",
         street="Bulevar Vojvode Stepe",
         city="Novi Sad",
-        country="Srbija",
+        country="Serbia",
         zip_code=21000
     ),
     Client(
@@ -54,7 +54,7 @@ seed_items = [
         name="Lidl",
         street="Bulevar Evrope",
         city="Novi Sad",
-        country="Srbija",
+        country="Serbia",
         zip_code=21000
     ),
     Client(
@@ -62,7 +62,7 @@ seed_items = [
         name="Camelot",
         street="Sremska",
         city="Novi Sad",
-        country="Srbija",
+        country="Serbia",
         zip_code=21000
     ),
     Client(
@@ -70,7 +70,7 @@ seed_items = [
         name="Pekara Evropa",
         street="Dr Ivana Ribara",
         city="Novi Sad",
-        country="Srbija",
+        country="Serbia",
         zip_code=21000
     ),
     Client(
@@ -78,7 +78,7 @@ seed_items = [
         name="McDonald's",
         street="Bulevar Oslobođenja",
         city="Novi Sad",
-        country="Srbija",
+        country="Serbia",
         zip_code=21000
     ),
 ]

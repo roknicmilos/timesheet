@@ -9,28 +9,31 @@ import ProjectsPage from "./pages/ProjectsPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import ReportsPage from "./pages/ReportsPage";
+import { CountriesContextProvider } from "../core/contexts/Countries.context";
 
 export default function App() {
     return (
-        <AuthContextProvider>
-            <BrowserRouter>
-                <div className="container">
-                    <Header />
-                    <div className="wrapper">
-                        <Routes>
-                            <Route path="/login" element={<LoginPage />} />
+        <CountriesContextProvider>
+            <AuthContextProvider>
+                <BrowserRouter>
+                    <div className="container">
+                        <Header />
+                        <div className="wrapper">
+                            <Routes>
+                                <Route path="/login" element={<LoginPage />} />
 
-                            <Route path="/" element={<TimesheetPage />} />
-                            <Route path="/clients" element={<ClientsPage />} />
-                            <Route path="/projects" element={<ProjectsPage />} />
-                            <Route path="/categories" element={<CategoriesPage />} />
-                            <Route path="/employees" element={<EmployeesPage />} />
-                            <Route path="/reports" element={<ReportsPage />} />
-                        </Routes>
+                                <Route path="/" element={<TimesheetPage />} />
+                                <Route path="/clients" element={<ClientsPage />} />
+                                <Route path="/projects" element={<ProjectsPage />} />
+                                <Route path="/categories" element={<CategoriesPage />} />
+                                <Route path="/employees" element={<EmployeesPage />} />
+                                <Route path="/reports" element={<ReportsPage />} />
+                            </Routes>
+                        </div>
+                        <Footer />
                     </div>
-                    <Footer />
-                </div>
-            </BrowserRouter>
-        </AuthContextProvider>
+                </BrowserRouter>
+            </AuthContextProvider>
+        </CountriesContextProvider>
     );
 }

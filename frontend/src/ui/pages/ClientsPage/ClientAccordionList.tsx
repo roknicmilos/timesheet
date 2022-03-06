@@ -1,19 +1,21 @@
 import Client from "../../../core/models/api/Client";
 import ClientAccordion from "./ClientAccordion";
 
-interface CleintAccordionList {
+interface ClientAccordionListProps {
     clients: Client[];
     selectedClientId: number;
-    onSelectClient(clientId: number): void;
-    onUpdateClient(updatedClient: Client): void;
+    onToggleAccordion(clientId: number): void;
+    onUpdateClient(): void;
+    onDeleteClient?(): void;
 }
 
-export default function CleintAccordionList({
+export default function ClientAccordionList({
     clients,
     selectedClientId,
-    onSelectClient,
+    onToggleAccordion,
     onUpdateClient,
-}: CleintAccordionList) {
+    onDeleteClient,
+}: ClientAccordionListProps) {
     return (
         <>
             {clients.map((client) => {
@@ -22,8 +24,9 @@ export default function CleintAccordionList({
                         key={client.id}
                         client={client}
                         isSelected={client.id === selectedClientId}
-                        onClick={() => onSelectClient(client.id)}
+                        onToggleAccordion={() => onToggleAccordion(client.id)}
                         onUpdateClient={onUpdateClient}
+                        onDeleteClient={onDeleteClient}
                     />
                 );
             })}

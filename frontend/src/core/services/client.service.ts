@@ -47,12 +47,38 @@ function prepareClientsURLParameters(page: number, filters?: ClientsFilters): st
     return urlParams;
 }
 
-export async function updateClient(client: Client): Promise<Client> {
+export interface ClientData {
+    name: string;
+    street: string;
+    city: string;
+    zip_code: number;
+    country: string;
+}
+
+export async function updateClient(clientId: number, clientData: ClientData): Promise<Client> {
     try {
-        const response = await timesheetApiClient.put(`/clients/${client.id}/`, client);
+        const response = await timesheetApiClient.put(`/clients/${clientId}/`, clientData);
         return response.data;
     } catch (error) {
-        console.error("Error while updating client\n", error);
+        console.error("Error while updating a client\n", error);
         return {} as Client;
+    }
+}
+
+export async function createClient(clientData: ClientData): Promise<Client> {
+    try {
+        const response = await timesheetApiClient.post("/clients/", clientData);
+        return response.data;
+    } catch (error) {
+        console.error("Error while creating a new client\n", error);
+        return {} as Client;
+    }
+}
+
+export async function deleteClient(clientId: number): Promise<void> {
+    try {
+        await timesheetApiClient.delete(`/clients/${clientId}`);
+    } catch (error) {
+        console.error("Error while deleting a client\n", error);
     }
 }

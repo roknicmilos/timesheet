@@ -10,7 +10,12 @@ from projects.seeds.categories import seed_items as category_seeds
 seed_items = []
 
 projects = list(Project.objects.filter(pk__in=[project.pk for project in project_seeds]))
+if not projects:
+    raise ValueError('Unable to seed Time Sheet Reports because there are no Projects')
+
 categories = list(Category.objects.filter(pk__in=[category.pk for category in category_seeds]))
+if not categories:
+    raise ValueError('Unable to seed Time Sheet Reports because there are no Categories')
 
 time_sheet_report_id = 1
 for employee in User.objects.filter(pk__in=[user.pk for user in user_seeds]):

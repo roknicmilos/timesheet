@@ -5,18 +5,25 @@ import ClientForm from "./ClientForm";
 interface ClientAccordionProps {
     client: Client;
     isSelected: boolean;
-    onClick(): void;
-    onUpdateClient(updatedClient: Client): void;
+    onToggleAccordion(): void;
+    onUpdateClient(): void;
+    onDeleteClient?(): void;
 }
 
-export default function ClientAccordion({ client, isSelected, onClick, onUpdateClient }: ClientAccordionProps) {
+export default function ClientAccordion({
+    client,
+    isSelected,
+    onToggleAccordion,
+    onUpdateClient,
+    onDeleteClient,
+}: ClientAccordionProps) {
     return (
         <div className="accordion">
-            <div className="accordion__intro" onClick={onClick}>
+            <div className="accordion__intro" onClick={onToggleAccordion}>
                 <h4 className="accordion__title">{client.name}</h4>
             </div>
             <Collapse isOpened={isSelected}>
-                <ClientForm client={client} onSubmit={onUpdateClient} />
+                <ClientForm client={client} onSubmit={onUpdateClient} onDelete={onDeleteClient} />
             </Collapse>
         </div>
     );
