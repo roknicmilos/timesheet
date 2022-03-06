@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import Client from "../../../core/models/api/Client";
 import { updateClient } from "../../../core/services/client.service";
+import InputField from "../../components/InputField";
 
 interface ClientFormProps {
     client: Client;
@@ -26,55 +27,25 @@ export default function ClientForm({ client, onSubmit }: ClientFormProps) {
         <form className="accordion__content" onSubmit={handleSubmit}>
             <div className="info">
                 <div className="info__form">
-                    <ul className="info__wrapper">
-                        <li className="info__list">
-                            <label className="info__label">Client name:</label>
-                            <input
-                                className="in-text"
-                                name="name"
-                                type="text"
-                                value={formData.name}
-                                onChange={handleChange}
-                            />
-                        </li>
-                        <li className="info__list">
-                            <label className="report__label">Address:</label>
-                            <input
-                                className="in-text"
-                                name="street"
-                                type="text"
-                                value={formData.street}
-                                onChange={handleChange}
-                            />
-                        </li>
-                        <li className="info__list">
-                            <label className="report__label">City:</label>
-                            <input
-                                className="in-text"
-                                name="city"
-                                type="text"
-                                value={formData.city}
-                                onChange={handleChange}
-                            />
-                        </li>
-                        <li className="info__list">
-                            <label className="report__label">Zip/Postal code:</label>
-                            <input
-                                className="in-text"
-                                name="zip_code"
-                                type="text"
-                                value={formData.zip_code}
-                                onChange={handleChange}
-                            />
-                        </li>
-                        <li className="info__list">
+                    <div className="info__wrapper">
+                        <InputField label="Client name" name="name" value={formData.name} onChange={handleChange} />
+                        <InputField label="Address" name="street" value={formData.street} onChange={handleChange} />
+                        <InputField label="City" name="city" value={formData.city} onChange={handleChange} />
+                        <InputField
+                            label="Zip/Postal code"
+                            name="zip_code"
+                            value={formData.zip_code}
+                            onChange={handleChange}
+                        />
+
+                        <div className="info__list">
                             <label className="report__label">Country:</label>
                             <select className="info__select" name="country" onChange={handleChange}>
                                 {/* TODO: add country options (FE should probably provide this) */}
                                 <option value={formData.country}>All</option>
                             </select>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div className="btn-wrap">
