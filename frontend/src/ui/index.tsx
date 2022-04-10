@@ -4,6 +4,7 @@ import Footer from "./layout/Footer";
 import Header from "./layout/Header";
 import LoginPage from "./pages/LoginPage";
 import TimesheetPage from "./pages/TimesheetPage";
+import DailyTimesheetPage from "./pages/DailyTimesheetPage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import CategoriesPage from "./pages/CategoriesPage";
@@ -23,6 +24,7 @@ export default function App() {
                                 <Route path="/login" element={<LoginPage />} />
 
                                 <Route path="/" element={<TimesheetPage />} />
+                                <Route path="/daily-timesheet" element={<DailyTimesheetPage />} />
                                 <Route path="/clients" element={<ClientsPage />} />
                                 <Route path="/projects" element={<ProjectsPage />} />
                                 <Route path="/categories" element={<CategoriesPage />} />

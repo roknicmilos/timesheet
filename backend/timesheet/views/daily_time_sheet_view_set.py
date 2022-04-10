@@ -27,6 +27,8 @@ class DailyTimeSheetViewSet(viewsets.ViewSet):
             filters &= Q(date__gte=url_params.get('from'))
         if 'until' in url_params:
             filters &= Q(date__lte=url_params.get('until'))
+        if 'date' in url_params:
+            filters &= Q(date=url_params.get('date'))
         return filters
 
     def create(self, request, **kwargs):

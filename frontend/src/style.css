@@ -588,7 +588,9 @@ li {
 
 .month-table__regular {
     width: 14%;
+    padding: 5px;
     border: 1px solid #dedede;
+    cursor: pointer;
 }
 
 .month-table__regular--disabled {
@@ -597,13 +599,19 @@ li {
 
 .month-table__date {
     width: 100%;
-    padding: 5px;
     color: #323232;
+    display: flex;
+    justify-content: space-between;
+}
+
+.month-table__checkmark {
+    width: 20px;
+    height: 20px;
 }
 
 .month-table__hours {
     width: 100%;
-    padding: 10px 5px;
+    padding: 20px 0 10px 0;
 }
 
 .month-table__day {
@@ -714,6 +722,7 @@ li {
     background: #fff;
     text-decoration: none;
     transition: background 0.2s linear;
+    cursor: pointer;
 }
 
 .day-table__list--active,

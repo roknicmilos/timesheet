@@ -13,5 +13,5 @@ class HasAccessToUserResources(BasePermission):
         for key in self.USER_PK_KEYS:
             if key in view.kwargs:
                 return int(view.kwargs.get(key))
-        else:
-            raise KeyError('Unable to find user ID in view kwargs')
+
+        return False

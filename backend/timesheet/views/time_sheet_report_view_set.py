@@ -1,12 +1,17 @@
 from django.db.models import Q
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets
+from auth.authentication import TokenAuthentication
+from auth.permissions import HasAccessToUserResources
 from main.utils import get_bool_url_param_value, Paginator
 from timesheet.models import TimeSheetReport
 from timesheet.serializers import TimeSheetReportSerializer
 
 
 class TimeSheetReportViewSet(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, HasAccessToUserResources]
 
     def list(self, request, **kwargs):
         filters = self._get_list_filters(url_params=request.query_params)
