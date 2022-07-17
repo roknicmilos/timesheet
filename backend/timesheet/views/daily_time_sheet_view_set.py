@@ -1,35 +1,29 @@
-from django.db.models import Q
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import viewsets
 from auth.authentication import TokenAuthentication
 from auth.permissions import HasAccessToUserResources
-from main.utils import Paginator
+from main.viewsets import ViewSet
 from timesheet.models import DailyTimeSheet, TimeSheetReport
 from timesheet.serializers import DailyTimeSheetSerializer
 
 
-class DailyTimeSheetViewSet(viewsets.ViewSet):
+class DailyTimeSheetViewSet(ViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, HasAccessToUserResources]
+    model_class = DailyTimeSheet
+    serializer_class = DailyTimeSheetSerializer
 
-    def list(self, request, **kwargs):
-        filters = self._get_list_filters(url_params=request.query_params)
-        queryset = DailyTimeSheet.objects.filter(filters)
-        paginator = Paginator(queryset=queryset, request=request)
-        serializer = DailyTimeSheetSerializer(paginator.page, many=True)
-        return Response(data=serializer.data)
-
-    def _get_list_filters(self, url_params: dict) -> Q:
-        filters = Q(employee=self.request.user)
-        if 'from' in url_params:
-            filters &= Q(date__gte=url_params.get('from'))
-        if 'until' in url_params:
-            filters &= Q(date__lte=url_params.get('until'))
-        if 'date' in url_params:
-            filters &= Q(date=url_params.get('date'))
-        return filters
+    # TODO: REPLACE WITH FILTER CLASS
+    # def _get_list_filters(self, url_params: dict) -> Q:
+    #     filters = Q(employee=self.request.user)
+    #     if 'from' in url_params:
+    #         filters &= Q(date__gte=url_params.get('from'))
+    #     if 'until' in url_params:
+    #         filters &= Q(date__lte=url_params.get('until'))
+    #     if 'date' in url_params:
+    #         filters &= Q(date=url_params.get('date'))
+    #     return filters
 
     def create(self, request, **kwargs):
         serializer = DailyTimeSheetSerializer(data={**request.data, 'employee': self.request.user.pk})

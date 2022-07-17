@@ -1,33 +1,32 @@
 from typing import Type, List
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import QuerySet, Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from main import settings
 from main.models import BaseModel
-from main.serializers import ListResponseSerializer
 from rest_framework import serializers
+from main.serializers import ListResponseSerializer
 
 
 class ViewSet(viewsets.ViewSet):
     model_class: Type[BaseModel]
     available_alphabet_letters_default_field: str = None
     serializer_class: Type[serializers.ModelSerializer]
+    filter_backends = settings.REST_FRAMEWORK.get('DEFAULT_FILTER_BACKENDS', [])
 
     def list(self, request, **kwargs):
         serializer = ListResponseSerializer(
-            queryset=self.get_list_queryset(),
+            queryset=self.filter_queryset(queryset=self.model_class.objects.all()),
             model_serializer_class=self.serializer_class,
             request=request
         )
         return Response(data=serializer.data)
 
-    def get_list_queryset(self) -> QuerySet:
-        filters = self.get_list_filters()
-        return self.model_class.objects.filter(filters).order_by('-modified')
-
-    def get_list_filters(self) -> Q:
-        return Q()
+    def filter_queryset(self, queryset):
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        return queryset
 
     @action(detail=False, methods=['get'], url_path=r'available-alphabet-letters')
     def available_alphabet_letters(self, request) -> Response:

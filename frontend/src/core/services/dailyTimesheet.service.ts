@@ -7,7 +7,7 @@ export async function getDailyTimesheets(
     from: Date,
     until: Date
 ): Promise<DailyTimesheet[] | undefined> {
-    let url = `/users/${userId}/daily-time-sheets/?from=${getDateIsoFormat(from)}&until=${getDateIsoFormat(until)}`;
+    let url = `/users/${userId}/daily-time-sheets/?from_date=${getDateIsoFormat(from)}&until_date=${getDateIsoFormat(until)}`;
     try {
         const response = await timesheetApiClient.get(url);
         return response.data;
