@@ -27,17 +27,17 @@ function DailyTimesheetPage() {
 
         // TODO: check why it runs more than it should
 
-        getDailyTimesheets(user!.id, monday, sunday).then((dailyTimesheets) => {
-            setDailyTimesheets(dailyTimesheets);
+        getDailyTimesheets(user!.id, monday, sunday).then((response) => {
+            setDailyTimesheets(response.dailyTimesheets);
             setSelectedDailyTimesheet(
-                dailyTimesheets!.find((dailyTimesheet) => {
+                response.dailyTimesheets!.find((dailyTimesheet) => {
                     const dailyTimesheetDate = new Date(dailyTimesheet.date);
                     return dailyTimesheetDate.getDate() === currentTimesheetDay.date.getDate();
                 })
             );
             setIsLoading(false);
         });
-    }, [dailyTimesheets, isLoading, user, monday, sunday, currentTimesheetDay]);
+    }, [isLoading, user, monday, sunday, currentTimesheetDay]);
 
     function onTimesheetDayChange(date: Date) {
         const selectedDailyTimesheet = dailyTimesheets!.find((dailyTimesheet) => {

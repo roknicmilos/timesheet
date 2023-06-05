@@ -11,7 +11,7 @@ export async function getClientsAvailableAlphabetLetters(): Promise<string[]> {
     }
 }
 
-interface ClientsListResponse {
+interface ClientListResponse {
     clients: Client[];
     totalPages: number;
 }
@@ -21,7 +21,7 @@ export interface ClientsFilters {
     name_contains: string;
 }
 
-export async function getClients(page: number, filters?: ClientsFilters): Promise<ClientsListResponse> {
+export async function getClients(page: number, filters?: ClientsFilters): Promise<ClientListResponse> {
     const urlParams = prepareClientsURLParameters(page, filters);
     try {
         const response = await timesheetApiClient.get(`/clients?${urlParams}`);
@@ -31,7 +31,7 @@ export async function getClients(page: number, filters?: ClientsFilters): Promis
         };
     } catch (error) {
         console.error("Error while fetching clients\n", error);
-        return {} as ClientsListResponse;
+        return {} as ClientListResponse;
     }
 }
 

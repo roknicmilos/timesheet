@@ -14,7 +14,7 @@ export async function getTimesheetMonth(userId: number, month: number, year: num
     return {
         month: month,
         year: year,
-        label: firstDayOfTheMonth.toLocaleString("default", { month: "long" }),
+        label: firstDayOfTheMonth.toLocaleString("default", {month: "long"}),
         weeks: timesheetWeeks,
         calculateTotalHours: function () {
             let totalHours = 0;
@@ -30,16 +30,25 @@ async function createTimesheetWeeks(userId: number, month: number, year: number)
     const firstCalendarDay = getFirstCalendarDay(month, year);
     const lastCalendarDay = getLastCalendarDay(month, year);
 
-    const dailyTimesheets = await getDailyTimesheets(userId, firstCalendarDay, lastCalendarDay);
+    const dailyTimesheetListResponse = await getDailyTimesheets(
+        userId,
+        firstCalendarDay,
+        lastCalendarDay
+    );
 
-    if (!dailyTimesheets) return [];
+    if (!dailyTimesheetListResponse.dailyTimesheets) return [];
 
     let currentWeekMonday = firstCalendarDay;
     let currentWeekOrder = 1;
 
     const timesheetWeeks = [];
     while (currentWeekMonday < lastCalendarDay) {
-        const timesheetWeek = createTimesheetWeek(currentWeekMonday, dailyTimesheets, currentWeekOrder, month);
+        const timesheetWeek = createTimesheetWeek(
+            currentWeekMonday,
+            dailyTimesheetListResponse.dailyTimesheets,
+            currentWeekOrder,
+            month
+        );
         timesheetWeeks.push(timesheetWeek);
         currentWeekMonday.setDate(currentWeekMonday.getDate() + 7);
         currentWeekOrder++;

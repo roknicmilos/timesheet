@@ -2,17 +2,26 @@ import DailyTimesheet from "../models/api/DailyTimesheet";
 import timesheetApiClient from "../timesheet.api";
 import { getDateIsoFormat } from "./datetime.service";
 
+interface DailyTimesheetListResponse {
+    dailyTimesheets: DailyTimesheet[];
+    totalPages: number;
+}
+
 export async function getDailyTimesheets(
     userId: number,
     from: Date,
     until: Date
-): Promise<DailyTimesheet[] | undefined> {
+): Promise<DailyTimesheetListResponse> {
     let url = `/users/${userId}/daily-time-sheets/?from_date=${getDateIsoFormat(from)}&until_date=${getDateIsoFormat(until)}`;
     try {
         const response = await timesheetApiClient.get(url);
-        return response.data;
+        return {
+            dailyTimesheets: response.data.items,
+            totalPages: response.data.pagination.total_pages,
+        };
     } catch (error) {
         console.error("Error while fetching user's Daily Time Sheets\n", error);
+        return {} as DailyTimesheetListResponse;
     }
 }
 
