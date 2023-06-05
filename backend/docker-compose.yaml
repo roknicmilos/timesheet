@@ -6,7 +6,7 @@ services:
     container_name: timesheet-django
     build:
       context: .
-      dockerfile: django.Dockerfile
+      dockerfile: Dockerfile
     environment:
       - CORS_ALLOWED_ORIGIN=http://localhost:3000
     ports:
